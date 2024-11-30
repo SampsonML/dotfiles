@@ -1,256 +1,407 @@
-# This is a demo config to show some of the most important commands more easily.
-# This is meant to be changed and configured, as it is intentionally kept sparse.
-# For a more advanced configuration example see my dotfiles:
-# https://github.com/FelixKratz/dotfiles
+# Color Palette
+BLACK=0xff181926
+WHITE=0xffcad3f5
+RED=0xffed8796
+GREEN=0xffa6da95
+BLUE=0xff8aadf4
+YELLOW=0xffeed49f
+ORANGE=0xfff5a97f
+MAGENTA=0xffc6a0f6
+GREY=0xff939ab7
+TRANSPARENT=0x00000000
 
-PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
+# General bar colors
+BAR_COLOR=0xcc24273a #$GREY # Grey bar
+ICON_COLOR=$WHITE # Color of all icons
+LABEL_COLOR=$WHITE # Color of all labels
 
-##### Bar Appearance #####
-# Configuring the general appearance of the bar, these are only some of the
-# options available. For all options see:
-# https://felixkratz.github.io/SketchyBar/config/bar
-# If you are looking for other colors, see the color picker:
-# https://felixkratz.github.io/SketchyBar/config/tricks#color-picker
+POPUP_BACKGROUND_COLOR=$BLACK
+POPUP_BORDER_COLOR=$WHITE
 
-# Colours
-transparent_color="0x00000000"
-white_color="0xffffffff"
+SHADOW_COLOR=$BLACK
 
-# tokyonight-night
-bar_color=0xff1a1b26
-default_icon_color="0xffc0caf5"
-icon_highlight_color="0xffbb9af7"
-default_label_color="0xffc0caf5"
+# Item specific special colors
+SPOTIFY_GREEN=$GREEN
 
-# onedark-deep
-#bar_color="0xff1a212e"
-bar_border_color="0xff41a7fc"
-#default_label_color="0xff93a4c3"
-#default_icon_color="0xff93a4c3"
-icon_highlight_color="0xffc75ae8"
-bracket_hightlight_color="0xff862aa1"
-danger_color="0xff992525"
+# --- matts colors --- #
+COLOR_1=0xff3b4252
+COLOR_2=0xaa09090a
+COLOR_3=0xff57627A
+COLOR_4=0x779A7E6F
+#COLOR_4=0xbb696b6e
+COL_DATE=0x001e527d
+COL_RAM=0x000d7c12
+COL_CPU=0x0062399b
+COL_BAT=0x00bd5eff
+COL_WET=0x00f80f0f
+col_mort=0xff54473F
+col_cpu=0xff54473F
+col_bat=0xff54473F
+col_date=0xff54473F
+col_spaces=0xff54473F
+col_spaces_def=0xccE9D5BA
+col_bar=0xff91a87a  
+col_bar_def=0xffCBD2A4
+HIGH=44
 
 
-sketchybar --bar height=32        \
-                 blur_radius=50   \
-                 position=top     \
-                 sticky=off       \
-                 padding_left=10  \
-                 padding_right=10 \
-                 color=0xffdd99ff
+############## BAR ############## 
+	sketchybar -m --bar \
+		height=72 \
+		position=left \
+		padding_left=3 \
+		padding_right=3 \
+		color="$col_bar" \
+		shadow=on \
+    margin=0 \
+    y_offset=0 \
+    border_color=0x77ffffff \
+    border_width=0 \
+    corner_radius=1 \
+ 		topmost=off
 
-##### Changing Defaults #####
-# We now change some default values that are applied to all further items
-# For a full list of all available item properties see:
-# https://felixkratz.github.io/SketchyBar/config/items
+############## GLOBAL DEFAULTS ############## 
+	sketchybar -m --default \
+		updates=when_shown \
+		drawing=on \
+		cache_scripts=on \
+		icon.font="Monofur Nerd Font:Bold:15.0" \
+		icon.color=0xffffffff \
+		label.font="Monofur Nerd Font:Bold:15.0" \
+		label.color=0xffeceff4 \
+		label.highlight_color=0xffffffff 
 
-sketchybar --default updates=when_shown                    \
-                     drawing=on                            \
-                     icon.font="Hack Nerd Font:Bold:17.0"  \
-                     icon.color=0xffffffff                 \
-                     label.font="Hack Nerd Font:Bold:14.0" \
-                     label.color=0xffffffff                \
-                     label.padding_left=4                  \
-                     label.padding_right=4                 \
-                     icon.padding_left=4                   \
-                     icon.padding_right=4
+############## SPACE DEFAULTS ############## 
+	sketchybar -m --default \
+		label.padding_left=0 \
+		label.padding_right=0 \
+		icon.padding_left=20 \
+		icon.padding_right=20 \
+    background.corner_radius=1 \
+		background.padding_left=20 \
+    background.padding_right=20 \
 
-##### Adding Mission Control Space Indicators #####
-# Now we add some mission control spaces:
-# https://felixkratz.github.io/SketchyBar/config/components#space----associate-mission-control-spaces-with-an-item
-# to indicate active and available mission control spaces
+apple=(
+  script="~/.config/sketchybar/plugins/apple2.sh"
+  #click_script="$POPUP_CLICK_SCRIPT"
+  label="$APPLE"
+  icon=""
+  label.padding_right=0
+  label.padding_left=0
+  background.color=0x0032a932
+  background.height=23
+  background.corner_radius=30
+  background.padding_left=10
+  background.padding_right=1
+  icon.color=0xff493628
+	icon.font="Terminess Nerd Font:Bold:20.0" \
+)
 
-SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9")
+sketchybar --add item apple left \
+  --set apple "${apple[@]!}"
 
-for i in "${!SPACE_ICONS[@]}"
-do
-  sid=$(($i+1))
-  sketchybar --add space space.$sid left                                 \
-             --set space.$sid associated_space=$sid                      \
-                              icon=${SPACE_ICONS[i]}                     \
-                              icon.padding_left=8                        \
-                              icon.padding_right=8                       \
-                              background.padding_left=5                  \
-                              background.padding_right=5                 \
-                              background.color=0xffbb33ff                \
-                              background.corner_radius=5                 \
-                              background.height=22                       \
-                              background.drawing=off                     \
-                              label.drawing=off                          \
-                              script="$PLUGIN_DIR/space.sh"              \
-                              click_script="yabai -m space --focus $sid"
+
+	sketchybar -m --add item break2 left \
+		--set break2 icon=""\
+		--set break2 icon.padding_left=0 \
+		--set break2 icon.padding_right=0 \
+    --set break2 icon.color="$col_mort" \
+		--set break2 label.color="$col_mort" \
+		--set break2 background.padding_right=2 \
+	  --set break2 icon.font="Terminess Nerd Font:Bold:22.0" \
+
+############## PRIMARY DISPLAY SPACES ############## 
+	# SPACE 1: CODE ICON
+	# SPACE 2: WEB ICON
+	sketchybar -m --add space web left \
+		--set web icon="web"\
+		--set web icon.highlight_color=0xff7943b8 \
+    --set web icon.color="$col_spaces" \
+		--set web associated_display=1 \
+		--set web associated_space=1 \
+		--set web background.padding_left=30 \
+    --set web icon.padding_left=25 \
+    --set web icon.padding_right=30 \
+		--set web label.color=0xffffffff \
+		--set web background.color="$COLOR_4"  \
+		--set web background.height="$HIGH" \
+		--set web click_script="yabai -m space --focus 1" \
+		--set web script="~/.config/sketchybar/plugins/space.sh" \
+
+
+	sketchybar -m --add space code left \
+		--set code icon="terminal"\
+    --set code icon.color="$col_spaces" \
+		--set code associated_display=1 \
+		--set code associated_space=2 \
+		--set code icon.padding_left=10 \
+		--set code icon.padding_right=10 \
+		--set code label.color=0xffeceff4 \
+		--set code background.color="$COLOR_4"  \
+		--set code background.height="$HIGH" \
+	  --set code icon.font="Monofur Nerd Font:Bold:14.0" \
+		--set code click_script="yabai -m space --focus 2" \
+		--set code script="~/.config/sketchybar/plugins/space.sh" \
+
+
+	# SPACE 3: HOME ICON
+	sketchybar -m --add space home left \
+		--set home icon="slack" \
+    --set home icon.color="$col_spaces" \
+		--set home icon.highlight_color=0xff8CABC8 \
+		--set home associated_display=1 \
+		--set home associated_space=3 \
+		--set home icon.padding_left=18 \
+		--set home icon.padding_right=20 \
+		--set home label.color=0xffeceff4 \
+		--set home background.color="$COLOR_4"  \
+		--set home background.height="$HIGH" \
+		--set home click_script="yabai -m space --focus 3" \
+		--set home script="~/.config/sketchybar/plugins/space.sh" \
+
+	# SPACE 4: CHAT ICON
+	sketchybar -m --add space chat left \
+		--set chat icon="mail"\
+    --set chat icon.color="$col_spaces" \
+		--set chat icon.highlight_color=0xff8CABC8 \
+		--set chat icon.padding_left=24 \
+		--set chat icon.padding_right=20 \
+		--set chat associated_display=1 \
+		--set chat associated_space=4 \
+		--set chat label.color=0xffeceff4 \
+		--set chat background.color="$COLOR_4"  \
+		--set chat background.height="$HIGH" \
+		--set chat click_script="yabai -m space --focus 4" \
+		--set chat script="~/.config/sketchybar/plugins/space.sh" \
+
+	# SPACE 5: MUSIC ICON
+	sketchybar -m --add space music left \
+		--set music icon="notes" \
+    --set music icon.color="$col_spaces" \
+		--set music icon.highlight_color=0xff8CABC8 \
+		--set music icon.padding_left=18 \
+		--set music icon.padding_right=20 \
+		--set music associated_display=1 \
+		--set music associated_space=5 \
+		--set music label.color=0xffeceff4 \
+		--set music background.color="$COLOR_4"  \
+		--set music background.height="$HIGH" \
+		--set music click_script="yabai -m space --focus 5" \
+		--set music script="~/.config/sketchybar/plugins/space.sh" \
+
+	# SPACE 6: OTHER ICON
+	sketchybar -m --add space other left \
+		--set other icon="music" \
+    --set other icon.color="$col_spaces" \
+		--set other icon.highlight_color=0xff8CABC8 \
+		--set other icon.padding_left=18 \
+		--set other icon.padding_right=20 \
+		--set other associated_display=1 \
+		--set other associated_space=6 \
+		--set other label.color=0xffeceff4 \
+		--set other background.color="$COLOR_4"  \
+		--set other background.height="$HIGH" \
+		--set other click_script="yabai -m space --focus 6" \
+		--set other script="~/.config/sketchybar/plugins/space.sh" \
+
+	# SPACE 6: OTHER ICON
+	sketchybar -m --add space other2 left \
+		--set other2 icon="study" \
+    --set other2 icon.color="$col_spaces" \
+		--set other2 icon.highlight_color=0xff8CABC8 \
+		--set other2 icon.padding_left=18 \
+		--set other2 icon.padding_right=20 \
+		--set other2 associated_display=1 \
+		--set other2 associated_space=7 \
+		--set other2 label.color=0xffeceff4 \
+		--set other2 background.color="$COLOR_4"  \
+		--set other2 background.height="$HIGH" \
+		--set other2 click_script="yabai -m space --focus 7" \
+		--set other2 script="~/.config/sketchybar/plugins/space.sh" \
+
+
+	# SPACE 6: OTHER ICON
+	sketchybar -m --add space other3 left \
+		--set other3 icon="random" \
+    --set other3 icon.color="$col_spaces" \
+		--set other3 icon.highlight_color=0xff8CABC8 \
+		--set other3 icon.padding_left=18 \
+		--set other3 icon.padding_right=20 \
+		--set other3 associated_display=1 \
+		--set other3 associated_space=8 \
+		--set other3 label.color=0xffeceff4 \
+		--set other3 background.color="$COLOR_4"  \
+		--set other3 background.height="$HIGH" \
+		--set other3 click_script="yabai -m space --focus 8" \
+		--set other3 script="~/.config/sketchybar/plugins/space.sh" \
+ 
+	# SPACE 7: OTHER ICON
+	sketchybar -m --add space other4 left \
+		--set other3 icon="clean" \
+    --set other3 icon.color="$col_spaces" \
+		--set other3 icon.highlight_color=0xff8CABC8 \
+		--set other3 associated_display=1 \
+		--set other3 associated_space=8 \
+		--set other3 label.color=0xffeceff4 \
+		--set other3 background.color="$COLOR_4"  \
+		--set other3 background.height="$HIGH" \
+		--set other3 click_script="yabai -m space --focus 9" \
+		--set other3 script="~/.config/sketchybar/plugins/space.sh" \
+
+
+	sketchybar -m --add item break3 left \
+		--set break3 icon=""\
+		--set break3 icon.padding_left=0 \
+		--set break3 icon.padding_right=0 \
+    --set break3 icon.color="$col_mort" \
+		--set break3 label.color="$col_mort" \
+		--set break3 background.padding_right=0 \
+	  --set break3 icon.font="Terminess Nerd Font:Bold:22.0" \
+ # WINDOW TITLE
+	#sketchybar -m --add item title left \
+	#	--set title icon="" \
+	#	--set title label.padding_left=9 \
+	#	--set title background.color="$COLOR_4"  \
+	#	--set title background.height=21 \
+	#	--set title background.padding_left=7 \
+	#	--set title script="~/.config/sketchybar/plugins/title.sh" \
+	#	--set title update_freq=20 \
+  #sketchybar --subscribe title title_change
+
+############## ITEM DEFAULTS ###############
+	sketchybar -m --default \
+		label.padding_left=2 \
+		icon.padding_right=2 \
+		icon.padding_left=6 \
+		label.padding_right=6
+
+
+############## RIGHT ITEMS ############## 
+
+
+############## RIGHT ITEMS ############## 
+
+	# DATE TIME
+	sketchybar -m --add item logo right \
+		--set logo icon=""\
+		--set logo icon.padding_left=14 \
+		--set logo icon.padding_right=2 \
+    --set logo icon.color="$col_mort" \
+		--set logo label.color="$col_mort" \
+		--set logo background.padding_right=25 \
+	  --set logo icon.font="Terminess Nerd Font:Bold:22.0" \
+
+	sketchybar -m --add item break right \
+		--set break icon=""\
+		--set break icon.padding_left=0 \
+		--set break icon.padding_right=0 \
+    --set break icon.color="$col_mort" \
+		--set break label.color="$col_mort" \
+		--set break background.padding_right=2 \
+	  --set break icon.font="Terminess Nerd Font:Bold:22.0" \
+  
+  # DATE TIME
+	sketchybar -m --add item date_time right \
+		--set date_time icon=" "\
+		--set date_time icon.padding_left=2 \
+		--set date_time icon.padding_right=2 \
+    --set date_time icon.color="$col_mort" \
+		--set date_time label.color="$col_mort" \
+		--set date_time update_freq=1 \
+		--set date_time background.color="$COL_DATE" \
+		--set date_time background.height=21 \
+		--set date_time background.padding_right=10 \
+		--set date_time script="~/.config/sketchybar/plugins/mortality.sh" \
+
+
+  # BATTERY STATUS
+  sketchybar -m --add item battery right                      \
+    --set battery script="~/.config/sketchybar/plugins/battery.sh"       \
+                         update_freq=120                       \
+    --set battery icon.padding_left=3 \
+    --set battery icon.padding_right=0 \
+    --set battery icon.color="$col_bat" \
+    --set battery label.color="$col_bat" \
+    --set battery background.color="$COL_BAT"  \
+    --set battery background.height=21 \
+    --set battery background.padding_right=7 \
+    --subscribe battery system_woke power_source_change
+	
+  # CPU USAGE
+	sketchybar -m --add item cpu_percent right \
+		--set cpu_percent icon="CPU  "\
+		--set cpu_percent icon.padding_left=4 \
+		--set cpu_percent icon.padding_right=0 \
+    --set cpu_percent icon.color="$col_cpu" \
+	  --set cpu_percent icon.font="Terminess Nerd Font:Bold:17.0" \
+		--set cpu_percent label.color="$col_cpu" \
+		--set cpu_percent background.color="$COL_CPU"  \
+		--set cpu_percent background.height=21 \
+		--set cpu_percent background.padding_right=7 \
+		--set cpu_percent update_freq=2 \
+		--set cpu_percent script="~/.config/sketchybar/plugins/cpu.sh" \
+
+  # DATE TIME
+	sketchybar -m --add item mortality right \
+		--set mortality icon="󰥔"\
+		--set mortality icon.padding_left=8 \
+		--set mortality icon.padding_right=2 \
+    --set mortality icon.color="$col_date" \
+		--set mortality label.color="$col_date" \
+		--set mortality update_freq=10 \
+		--set mortality background.color="$COL_DATE" \
+		--set mortality background.height=21 \
+		--set mortality background.padding_right=7 \
+		--set mortality script="~/.config/sketchybar/plugins/clock.sh" \
+  
+  # RAM USAGE
+	sketchybar -m --add item topmem right \
+		--set topmem icon="󰃭" \
+		--set topmem icon.padding_left=8 \
+		--set topmem icon.padding_right=0 \
+    --set topmem icon.color="$col_date" \
+		--set topmem label.color="$col_date" \
+		--set topmem background.color="$COL_RAM"  \
+		--set topmem background.height=21 \
+		--set topmem background.padding_right=7 \
+		--set topmem update_freq=2 \
+		--set topmem script="~/.config/sketchybar/plugins/date.sh" \
+
+
+	sketchybar -m --add item break4 right \
+		--set break4 icon=""\
+		--set break4 icon.padding_left=0 \
+		--set break4 icon.padding_right=0 \
+    --set break4 icon.color="$col_mort" \
+		--set break4 label.color="$col_mort" \
+		--set break4 background.padding_right=0 \
+	  --set break4 icon.font="Terminess Nerd Font:Bold:22.0" \
+
+#---------- aerospace ----------#
+space_names=("" "web" "terminal" "slack" "mail" "notes" "music" "study" "clean")
+sketchybar --add event aerospace_workspace_change
+
+for sid in $(aerospace list-workspaces --all); do
+    sketchybar --add item space.$sid left \
+        --subscribe space.$sid aerospace_workspace_change \
+        --set space.$sid \
+        background.corner_radius=5 \
+        label.color="$col_spaces" \
+        background.drawing=off \
+		    background.color="$COLOR_4"  \
+		    background.height="$HIGH" \
+        label="${space_names[sid]}" \
+        click_script="aerospace workspace $sid" \
+        script="$CONFIG_DIR/plugins/aerospace.sh $sid"
 done
 
-##### Adding Left Items #####
-# We add some regular items to the left side of the bar
-# only the properties deviating from the current defaults need to be set
 
-sketchybar --add item space_separator left                         \
-           --set space_separator icon=                            \
-                                 background.padding_left=5        \
-                                 background.padding_right=15       \
-                                 label.drawing=off                 \
-                                                                   \
-           --add item front_app  left                              \
-           --set front_app       script="$PLUGIN_DIR/front_app.sh" \
-                                 icon.drawing=off                  \
-           --subscribe front_app front_app_switched
+# Handle workspace changes
+sketchybar --add event aerospace_workspace_change \
+  --subscribe space.* aerospace_workspace_change
 
-##### Adding Right Items #####
-# In the same way as the left items we can add items to the right side.
-# Additional position (e.g. center) are available, see:
-# https://felixkratz.github.io/SketchyBar/config/items#adding-items-to-sketchybar
-
-sketchybar --add item clock right                              \
-           --set clock   update_freq=10                        \
-                         script="$PLUGIN_DIR/clock.sh"         \
-                                                               \
-           --add item battery right                            \
-           --set battery script="$PLUGIN_DIR/battery.sh"       \
-                         update_freq=120                       \
-           --subscribe battery system_woke power_source_change
-
-sketchybar -m --add item vpn right \
-              --set vpn icon= \
-                        update_freq=5 \
-                        script="~/.config/sketchybar/plugins/vpn.sh"
-
-
-POPUP_CLICK_SCRIPT="sketchybar --set \$NAME popup.drawing=toggle"
-
-sketchybar --add alias  "Control Center,WiFi" right                      \
-           --rename     "Control Center,WiFi" wifi_alias                 \
-           --set        wifi_alias    icon.drawing=off                   \
-                                      alias.color=0xffe6fff7              \
-                                      background.padding_right=0         \
-                                      icon.padding_right=0               \
-                                      align=right                        \
-                                      click_script="$POPUP_CLICK_SCRIPT" \
-                                      update_freq=1                      \
-                                      script="$PLUGIN_DIR/wifi.sh"       \
-           --subscribe  wifi_alias    mouse.entered                      \
-                                      mouse.exited                       \
-                                      mouse.exited.global                \
-                                                                         \
-            --add       item          wifi.details popup.wifi_alias      \
-            --set       wifi.details  background.corner_radius=12        \
-                                      background.padding_left=7          \
-                                      background.padding_right=7         \
-                                      icon.background.height=2           \
-                                      icon.background.y_offset=-12       \
-                                      click_script="sketchybar --set wifi.alias popup.drawing=off"
-
-sketchybar --add alias "Control Center,Bluetooth" right                            \
-           --rename "Control Center,Bluetooth" bluetooth_alias                     \
-           --set bluetooth_alias icon.drawing=off                                  \
-                              label.drawing=off                                    \
-                              alias.color=0xffe6fff7                                 \
-                              background.padding_right=0                           \
-                              align=right                                          \
-                              click_script="$PLUGIN_DIR/bluetooth_click.sh"  
-
-
-sketchybar --add item        cpu.top right                  \
-           --set cpu.top     label.font="Hack Nerd Font:Bold:9.0"  \
-                             label=CPU                      \
-                             icon.drawing=off               \
-                             width=0                        \
-                             y_offset=6                     \
-                                                            \
-           --add item        cpu.percent right              \
-           --set cpu.percent label.font="Hack Nerd Font:Bold:9.0"    \
-                             label=CPU                      \
-                             y_offset=-4                    \
-                             width=40                       \
-                             icon.drawing=off               \
-                             update_freq=2                  \
-                             mach_helper="$HELPER"          \
-                                                            \
-           --add graph       cpu.sys right 100              \
-           --set cpu.sys     width=0                        \
-                             graph.color=0xffffff               \
-                             graph.fill_color=0xffffffff          \
-                             label.drawing=off              \
-                             icon.drawing=off               \
-                             background.padding_left=10     \
-                             background.height=30           \
-                             background.drawing=on          \
-                             background.color=0x00000000  \
-                                                            \
-           --add graph       cpu.user right 100             \
-           --set cpu.user    graph.color=0xffffffff              \
-                             label.drawing=off              \
-                             icon.drawing=off               \
-                             background.padding_left=10     \
-                             background.height=30           \
-                             background.drawing=on          \
-                             background.color=0x00000000
-
-sketchybar --add item volume right                      \
-           --set volume script="$PLUGIN_DIR/volume.sh"  \
-                        updates=on                      \
-                        icon.background.drawing=on      \
-                        icon.background.color=0xffffffff     \
-                        icon.background.height=8        \
-                        icon.background.corner_radius=3 \
-                        icon.width=0                    \
-                        icon.align=right                \
-                        label.drawing=off               \
-                        background.drawing=on           \
-                        background.color=0x00000000  \
-                        background.height=8             \
-                        background.corner_radius=3      \
-                        background.padding_left=0       \
-                        background.padding_right=0      \
-                        align=left                      \
-           --subscribe volume volume_change
-
-sketchybar --add alias "Control Center,Sound" right                      \
-           --rename "Control Center,Sound" volume_alias                  \
-           --set volume_alias icon.drawing=off                           \
-                              label.drawing=off                          \
-                              alias.color=$WHITE                         \
-                              background.padding_right=0                 \
-                              background.padding_left=-5                 \
-                              width=50                                   \
-                              align=right                                \
-                              click_script="$PLUGIN_DIR/volume_click.sh"
-
-
-#### Add brackets
-sketchybar                                                \
-  --add bracket clock_bracket                             \
-    clock                                                 \
-    battery                                               \
-    wifi_alias                                            \
-    bluetooth_alias                                       \
-  --set clock_bracket                                     \
-    background.color=0xffdd99ff        \
-    background.border_color=0x000000       \
-    background.border_width=1.5                            \
-    background.corner_radius=2.5                            \
-  --add bracket mpd_bracket                               \
-    mpd                                                   \
-  --set mpd_bracket                                       \
-    background.color=0xffdd99ff                           \
-    background.border_color=0x000000 \
-    background.border_width=1.5                            \
-    background.corner_radius=2.5                            \
-  --add bracket utility_bracket                           \
-    space.1                                                 \
-    front_app                                             \
-    space_separator                                       \
-  --set utility_bracket                                   \
-    background.color=0xffdd99ff                           \
-    background.border_color=0x000000 \
-    background.border_width=1.5                             \
-    background.corner_radius=2.5
-
-##### Finalizing Setup #####
-# The below command is only needed at the end of the initial configuration and
-# should never be run in an item script.
-
-sketchybar --update
+############## FINALIZING THE SETUP ##############
+sketchybar --hotload true
+sketchybar -m --update
 
 echo "sketchybar configuration loaded.."
