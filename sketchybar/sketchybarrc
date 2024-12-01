@@ -1,53 +1,12 @@
-# Color Palette
-BLACK=0xff181926
-WHITE=0xffcad3f5
-RED=0xffed8796
-GREEN=0xffa6da95
-BLUE=0xff8aadf4
-YELLOW=0xffeed49f
-ORANGE=0xfff5a97f
-MAGENTA=0xffc6a0f6
-GREY=0xff939ab7
-TRANSPARENT=0x00000000
-
-# General bar colors
-BAR_COLOR=0xcc24273a #$GREY # Grey bar
-ICON_COLOR=$WHITE # Color of all icons
-LABEL_COLOR=$WHITE # Color of all labels
-
-POPUP_BACKGROUND_COLOR=$BLACK
-POPUP_BORDER_COLOR=$WHITE
-
-SHADOW_COLOR=$BLACK
-
-# Item specific special colors
-SPOTIFY_GREEN=$GREEN
-
 # --- matts colors --- #
-COLOR_1=0xff3b4252
-COLOR_2=0xaa09090a
-COLOR_3=0xff57627A
-COLOR_4=0x779A7E6F
-#COLOR_4=0xbb696b6e
-COL_DATE=0x001e527d
-COL_RAM=0x000d7c12
-COL_CPU=0x0062399b
-COL_BAT=0x00bd5eff
-COL_WET=0x00f80f0f
-col_mort=0xff54473F
-col_cpu=0xff54473F
-col_bat=0xff54473F
-col_date=0xff54473F
+col_seps=0xffD3C6AA
+col_icons=0xff493628
 col_spaces=0xff54473F
-col_spaces_def=0xccE9D5BA
 col_bar=0xff91a87a  
-col_bar_def=0xffCBD2A4
-HIGH=44
-
 
 ############## BAR ############## 
 	sketchybar -m --bar \
-		height=72 \
+		height=76 \
 		position=left \
 		padding_left=3 \
 		padding_right=3 \
@@ -81,222 +40,46 @@ HIGH=44
 		background.padding_left=20 \
     background.padding_right=20 \
 
-apple=(
-  script="~/.config/sketchybar/plugins/apple2.sh"
-  #click_script="$POPUP_CLICK_SCRIPT"
-  label="$APPLE"
-  icon=""
-  label.padding_right=0
-  label.padding_left=0
-  background.color=0x0032a932
-  background.height=23
-  background.corner_radius=30
-  background.padding_left=10
-  background.padding_right=1
-  icon.color=0xff493628
-	icon.font="Terminess Nerd Font:Bold:20.0" \
-)
+# add interactive new mac logo
+source "$HOME/.config/sketchybar/items/apple.sh"
 
-sketchybar --add item apple left \
-  --set apple "${apple[@]!}"
+sketchybar -m --add item break2 left \
+	--set break2 icon=""\
+	--set break2 icon.padding_left=0 \
+	--set break2 icon.padding_right=20 \
+  --set break2 label.padding_right=50 \
+  --set break2 icon.color="$col_seps" \
+	--set break2 label.color="$col_seps" \
+	--set break2 background.padding_right=8 \
+	--set break2 icon.font="Terminess Nerd Font:Bold:22.0" \
 
 
-	sketchybar -m --add item break2 left \
-		--set break2 icon=""\
-		--set break2 icon.padding_left=0 \
-		--set break2 icon.padding_right=0 \
-    --set break2 icon.color="$col_mort" \
-		--set break2 label.color="$col_mort" \
-		--set break2 background.padding_right=2 \
-	  --set break2 icon.font="Terminess Nerd Font:Bold:22.0" \
-
-############## PRIMARY DISPLAY SPACES ############## 
-	# SPACE 1: CODE ICON
-	# SPACE 2: WEB ICON
-	sketchybar -m --add space web left \
-		--set web icon="web"\
-		--set web icon.highlight_color=0xff7943b8 \
-    --set web icon.color="$col_spaces" \
-		--set web associated_display=1 \
-		--set web associated_space=1 \
-		--set web background.padding_left=30 \
-    --set web icon.padding_left=25 \
-    --set web icon.padding_right=30 \
-		--set web label.color=0xffffffff \
-		--set web background.color="$COLOR_4"  \
-		--set web background.height="$HIGH" \
-		--set web click_script="yabai -m space --focus 1" \
-		--set web script="~/.config/sketchybar/plugins/space.sh" \
-
-
-	sketchybar -m --add space code left \
-		--set code icon="terminal"\
-    --set code icon.color="$col_spaces" \
-		--set code associated_display=1 \
-		--set code associated_space=2 \
-		--set code icon.padding_left=10 \
-		--set code icon.padding_right=10 \
-		--set code label.color=0xffeceff4 \
-		--set code background.color="$COLOR_4"  \
-		--set code background.height="$HIGH" \
-	  --set code icon.font="Monofur Nerd Font:Bold:14.0" \
-		--set code click_script="yabai -m space --focus 2" \
-		--set code script="~/.config/sketchybar/plugins/space.sh" \
-
-
-	# SPACE 3: HOME ICON
-	sketchybar -m --add space home left \
-		--set home icon="slack" \
-    --set home icon.color="$col_spaces" \
-		--set home icon.highlight_color=0xff8CABC8 \
-		--set home associated_display=1 \
-		--set home associated_space=3 \
-		--set home icon.padding_left=18 \
-		--set home icon.padding_right=20 \
-		--set home label.color=0xffeceff4 \
-		--set home background.color="$COLOR_4"  \
-		--set home background.height="$HIGH" \
-		--set home click_script="yabai -m space --focus 3" \
-		--set home script="~/.config/sketchybar/plugins/space.sh" \
-
-	# SPACE 4: CHAT ICON
-	sketchybar -m --add space chat left \
-		--set chat icon="mail"\
-    --set chat icon.color="$col_spaces" \
-		--set chat icon.highlight_color=0xff8CABC8 \
-		--set chat icon.padding_left=24 \
-		--set chat icon.padding_right=20 \
-		--set chat associated_display=1 \
-		--set chat associated_space=4 \
-		--set chat label.color=0xffeceff4 \
-		--set chat background.color="$COLOR_4"  \
-		--set chat background.height="$HIGH" \
-		--set chat click_script="yabai -m space --focus 4" \
-		--set chat script="~/.config/sketchybar/plugins/space.sh" \
-
-	# SPACE 5: MUSIC ICON
-	sketchybar -m --add space music left \
-		--set music icon="notes" \
-    --set music icon.color="$col_spaces" \
-		--set music icon.highlight_color=0xff8CABC8 \
-		--set music icon.padding_left=18 \
-		--set music icon.padding_right=20 \
-		--set music associated_display=1 \
-		--set music associated_space=5 \
-		--set music label.color=0xffeceff4 \
-		--set music background.color="$COLOR_4"  \
-		--set music background.height="$HIGH" \
-		--set music click_script="yabai -m space --focus 5" \
-		--set music script="~/.config/sketchybar/plugins/space.sh" \
-
-	# SPACE 6: OTHER ICON
-	sketchybar -m --add space other left \
-		--set other icon="music" \
-    --set other icon.color="$col_spaces" \
-		--set other icon.highlight_color=0xff8CABC8 \
-		--set other icon.padding_left=18 \
-		--set other icon.padding_right=20 \
-		--set other associated_display=1 \
-		--set other associated_space=6 \
-		--set other label.color=0xffeceff4 \
-		--set other background.color="$COLOR_4"  \
-		--set other background.height="$HIGH" \
-		--set other click_script="yabai -m space --focus 6" \
-		--set other script="~/.config/sketchybar/plugins/space.sh" \
-
-	# SPACE 6: OTHER ICON
-	sketchybar -m --add space other2 left \
-		--set other2 icon="study" \
-    --set other2 icon.color="$col_spaces" \
-		--set other2 icon.highlight_color=0xff8CABC8 \
-		--set other2 icon.padding_left=18 \
-		--set other2 icon.padding_right=20 \
-		--set other2 associated_display=1 \
-		--set other2 associated_space=7 \
-		--set other2 label.color=0xffeceff4 \
-		--set other2 background.color="$COLOR_4"  \
-		--set other2 background.height="$HIGH" \
-		--set other2 click_script="yabai -m space --focus 7" \
-		--set other2 script="~/.config/sketchybar/plugins/space.sh" \
-
-
-	# SPACE 6: OTHER ICON
-	sketchybar -m --add space other3 left \
-		--set other3 icon="random" \
-    --set other3 icon.color="$col_spaces" \
-		--set other3 icon.highlight_color=0xff8CABC8 \
-		--set other3 icon.padding_left=18 \
-		--set other3 icon.padding_right=20 \
-		--set other3 associated_display=1 \
-		--set other3 associated_space=8 \
-		--set other3 label.color=0xffeceff4 \
-		--set other3 background.color="$COLOR_4"  \
-		--set other3 background.height="$HIGH" \
-		--set other3 click_script="yabai -m space --focus 8" \
-		--set other3 script="~/.config/sketchybar/plugins/space.sh" \
- 
-	# SPACE 7: OTHER ICON
-	sketchybar -m --add space other4 left \
-		--set other3 icon="clean" \
-    --set other3 icon.color="$col_spaces" \
-		--set other3 icon.highlight_color=0xff8CABC8 \
-		--set other3 associated_display=1 \
-		--set other3 associated_space=8 \
-		--set other3 label.color=0xffeceff4 \
-		--set other3 background.color="$COLOR_4"  \
-		--set other3 background.height="$HIGH" \
-		--set other3 click_script="yabai -m space --focus 9" \
-		--set other3 script="~/.config/sketchybar/plugins/space.sh" \
-
-
-	sketchybar -m --add item break3 left \
-		--set break3 icon=""\
-		--set break3 icon.padding_left=0 \
-		--set break3 icon.padding_right=0 \
-    --set break3 icon.color="$col_mort" \
-		--set break3 label.color="$col_mort" \
-		--set break3 background.padding_right=0 \
-	  --set break3 icon.font="Terminess Nerd Font:Bold:22.0" \
- # WINDOW TITLE
-	#sketchybar -m --add item title left \
-	#	--set title icon="" \
-	#	--set title label.padding_left=9 \
-	#	--set title background.color="$COLOR_4"  \
-	#	--set title background.height=21 \
-	#	--set title background.padding_left=7 \
-	#	--set title script="~/.config/sketchybar/plugins/title.sh" \
-	#	--set title update_freq=20 \
-  #sketchybar --subscribe title title_change
-
-############## ITEM DEFAULTS ###############
+#-------------------------#
+#-------- icons ----------#
+#-------------------------#
+# icon defaults 
 	sketchybar -m --default \
 		label.padding_left=2 \
 		icon.padding_right=2 \
 		icon.padding_left=6 \
 		label.padding_right=6
 
-
-############## RIGHT ITEMS ############## 
-
-
-############## RIGHT ITEMS ############## 
-
 	# DATE TIME
 	sketchybar -m --add item logo right \
 		--set logo icon=""\
 		--set logo icon.padding_left=14 \
 		--set logo icon.padding_right=2 \
-    --set logo icon.color="$col_mort" \
-		--set logo label.color="$col_mort" \
+    --set logo icon.color="$col_icons" \
+		--set logo label.color="$COLOR_4" \
 		--set logo background.padding_right=25 \
-	  --set logo icon.font="Terminess Nerd Font:Bold:22.0" \
+	  --set logo icon.font="Terminess Nerd Font:Bold:24.0" \
 
 	sketchybar -m --add item break right \
-		--set break icon=""\
+		--set break icon=""\
 		--set break icon.padding_left=0 \
 		--set break icon.padding_right=0 \
-    --set break icon.color="$col_mort" \
-		--set break label.color="$col_mort" \
+    --set break icon.color="$col_seps" \
+		--set break label.color="$col_seps" \
 		--set break background.padding_right=2 \
 	  --set break icon.font="Terminess Nerd Font:Bold:22.0" \
   
@@ -305,10 +88,9 @@ sketchybar --add item apple left \
 		--set date_time icon=" "\
 		--set date_time icon.padding_left=2 \
 		--set date_time icon.padding_right=2 \
-    --set date_time icon.color="$col_mort" \
-		--set date_time label.color="$col_mort" \
+    --set date_time icon.color="$col_icons" \
+		--set date_time label.color="$col_icons" \
 		--set date_time update_freq=1 \
-		--set date_time background.color="$COL_DATE" \
 		--set date_time background.height=21 \
 		--set date_time background.padding_right=10 \
 		--set date_time script="~/.config/sketchybar/plugins/mortality.sh" \
@@ -320,9 +102,8 @@ sketchybar --add item apple left \
                          update_freq=120                       \
     --set battery icon.padding_left=3 \
     --set battery icon.padding_right=0 \
-    --set battery icon.color="$col_bat" \
-    --set battery label.color="$col_bat" \
-    --set battery background.color="$COL_BAT"  \
+    --set battery icon.color="$col_icons" \
+    --set battery label.color="$col_icons" \
     --set battery background.height=21 \
     --set battery background.padding_right=7 \
     --subscribe battery system_woke power_source_change
@@ -332,76 +113,75 @@ sketchybar --add item apple left \
 		--set cpu_percent icon="CPU  "\
 		--set cpu_percent icon.padding_left=4 \
 		--set cpu_percent icon.padding_right=0 \
-    --set cpu_percent icon.color="$col_cpu" \
+    --set cpu_percent icon.color="$col_icons" \
 	  --set cpu_percent icon.font="Terminess Nerd Font:Bold:17.0" \
-		--set cpu_percent label.color="$col_cpu" \
-		--set cpu_percent background.color="$COL_CPU"  \
+		--set cpu_percent label.color="$col_icons" \
 		--set cpu_percent background.height=21 \
 		--set cpu_percent background.padding_right=7 \
 		--set cpu_percent update_freq=2 \
 		--set cpu_percent script="~/.config/sketchybar/plugins/cpu.sh" \
 
-  # DATE TIME
+  # clock
 	sketchybar -m --add item mortality right \
 		--set mortality icon="󰥔"\
 		--set mortality icon.padding_left=8 \
 		--set mortality icon.padding_right=2 \
-    --set mortality icon.color="$col_date" \
-		--set mortality label.color="$col_date" \
+    --set mortality icon.color="$col_icons" \
+		--set mortality label.color="$col_icons" \
 		--set mortality update_freq=10 \
-		--set mortality background.color="$COL_DATE" \
 		--set mortality background.height=21 \
 		--set mortality background.padding_right=7 \
 		--set mortality script="~/.config/sketchybar/plugins/clock.sh" \
   
-  # RAM USAGE
+  # date
 	sketchybar -m --add item topmem right \
 		--set topmem icon="󰃭" \
 		--set topmem icon.padding_left=8 \
 		--set topmem icon.padding_right=0 \
-    --set topmem icon.color="$col_date" \
-		--set topmem label.color="$col_date" \
-		--set topmem background.color="$COL_RAM"  \
+    --set topmem icon.color="$col_icons" \
+		--set topmem label.color="$col_icons" \
 		--set topmem background.height=21 \
 		--set topmem background.padding_right=7 \
 		--set topmem update_freq=2 \
 		--set topmem script="~/.config/sketchybar/plugins/date.sh" \
 
-
-	sketchybar -m --add item break4 right \
-		--set break4 icon=""\
-		--set break4 icon.padding_left=0 \
-		--set break4 icon.padding_right=0 \
-    --set break4 icon.color="$col_mort" \
-		--set break4 label.color="$col_mort" \
-		--set break4 background.padding_right=0 \
-	  --set break4 icon.font="Terminess Nerd Font:Bold:22.0" \
-
+#-------------------------------#
 #---------- aerospace ----------#
-space_names=("" "web" "terminal" "slack" "mail" "notes" "music" "study" "clean")
-sketchybar --add event aerospace_workspace_change
+#-------------------------------#
+LABELS=("󰜫" "" "" "" "󰙏" "󰓇" "" "󰑴" "󰖌")
+INDEX=0
 
 for sid in $(aerospace list-workspaces --all); do
+    label="${LABELS[$INDEX]}"
+    
     sketchybar --add item space.$sid left \
         --subscribe space.$sid aerospace_workspace_change \
         --set space.$sid \
-        background.corner_radius=5 \
-        label.color="$col_spaces" \
+        background.color="$col_seps" \
+        background.corner_radius=8 \
+        background.height=35 \
         background.drawing=off \
-		    background.color="$COLOR_4"  \
-		    background.height="$HIGH" \
-        label="${space_names[sid]}" \
+        icon.padding_left=0 \
+        icon.padding_right=0 \
+        label.padding_left=15 \
+        label.padding_right=15 \
+        label.color=0xff493628 \
+		    update_freq=1 \
+        label.color="$col_spaces" \
+	      label.font="Terminess Nerd Font:Bold:24.0" \
+        label="$label" \
         click_script="aerospace workspace $sid" \
-        script="$CONFIG_DIR/plugins/aerospace.sh $sid"
+        script="~/.config/sketchybar/plugins/aerospace.sh $sid $focus_sid"
+    
+    INDEX=$((INDEX + 1))
 done
 
-
 # Handle workspace changes
-sketchybar --add event aerospace_workspace_change \
-  --subscribe space.* aerospace_workspace_change
+sketchybar --add event aerospace_workspace_change 
 
 ############## FINALIZING THE SETUP ##############
 sketchybar --hotload true
 sketchybar -m --update
 
 echo "sketchybar configuration loaded.."
+
