@@ -1,6 +1,7 @@
 # Dotfiles for various things
-## Current setup M1 Macbook Pro 2021
-<img src="demo_neovim.png" height="550"> 
-Using kitty, neovim, yabai, and simplebar
+## Current everforest themed setup M1 Macbook Pro 2021 (2024 setup)
+Using kitty,tmux, neovim, aerospace, and sketchybar
+<img src="everforest_minimal1.png" height="550"> 
+<img src="everforest_minimal2.png" height="550"> 
 
 
