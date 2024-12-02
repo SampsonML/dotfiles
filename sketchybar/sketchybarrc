@@ -1,14 +1,26 @@
+# --- everforest colors --- #
+everforest_brown=0xff493628
+everforest_green=0xff91a87a
+everforest_yellow=0xffD3C6AA 
+everforest_blue=0xff5E81AC 
+everforest_purple=0xffb48ead
+everforest_red=0xffbf616a
+everforest_orange=0xffd08770
+everforest_aqua=0xff8fbcbb
+everforest_gray=0xff4c566a
+everforest_white=0xffD3C6AA
+
 # --- matts colors --- #
-col_seps=0xffD3C6AA
-col_icons=0xff493628
-col_spaces=0xff54473F
-col_bar=0xff91a87a  
+col_seps="$everforest_brown"
+col_icons="$everforest_white"
+col_spaces="$everforest_brown"
+col_bar="$everforest_green"  
 
 ############## BAR ############## 
 	sketchybar -m --bar \
-		height=76 \
+		height=78 \
 		position=left \
-		padding_left=3 \
+		padding_left=7 \
 		padding_right=3 \
 		color="$col_bar" \
 		shadow=on \
@@ -16,7 +28,7 @@ col_bar=0xff91a87a
     y_offset=0 \
     border_color=0x77ffffff \
     border_width=0 \
-    corner_radius=1 \
+    corner_radius=0 \
  		topmost=off
 
 ############## GLOBAL DEFAULTS ############## 
@@ -44,7 +56,7 @@ col_bar=0xff91a87a
 source "$HOME/.config/sketchybar/items/apple.sh"
 
 sketchybar -m --add item break2 left \
-	--set break2 icon=""\
+	--set break2 icon=""\
 	--set break2 icon.padding_left=0 \
 	--set break2 icon.padding_right=20 \
   --set break2 label.padding_right=50 \
@@ -66,22 +78,64 @@ sketchybar -m --add item break2 left \
 
 	# DATE TIME
 	sketchybar -m --add item logo right \
-		--set logo icon=""\
-		--set logo icon.padding_left=14 \
+		--set logo icon=""\
+		--set logo icon.padding_left=12 \
 		--set logo icon.padding_right=2 \
     --set logo icon.color="$col_icons" \
 		--set logo label.color="$COLOR_4" \
 		--set logo background.padding_right=25 \
-	  --set logo icon.font="Terminess Nerd Font:Bold:24.0" \
+		--set logo background.padding_left=20 \
+    --set logo background.color=0x00ffffff \
+	  --set logo icon.font="Terminess Nerd Font:Bold:26.0" \
 
 	sketchybar -m --add item break right \
-		--set break icon=""\
+		--set break icon=""\
 		--set break icon.padding_left=0 \
 		--set break icon.padding_right=0 \
     --set break icon.color="$col_seps" \
 		--set break label.color="$col_seps" \
 		--set break background.padding_right=2 \
 	  --set break icon.font="Terminess Nerd Font:Bold:22.0" \
+ 
+  # clock
+	sketchybar -m --add item mortality left \
+		--set mortality icon=""\
+		--set mortality icon.padding_left=2 \
+		--set mortality icon.padding_right=0 \
+    --set mortality icon.color="$col_icons" \
+		--set mortality label.color="$col_icons" \
+    --set mortality label.padding_left=10 \
+    --set mortality label.padding_right=10 \
+		--set mortality update_freq=10 \
+		--set mortality background.height=1 \
+		--set mortality background.padding_left=10 \
+		--set mortality background.padding_right=10 \
+		--set mortality script="~/.config/sketchybar/plugins/clock.sh" \
+		--set mortality icon.font="Monofur Nerd Font:Bold:17.0" \
+
+  # date
+	sketchybar -m --add item topmem left\
+		--set topmem icon="󰃭" \
+		--set topmem icon.padding_left=2 \
+		--set topmem icon.padding_right=0 \
+    --set topmem icon.color="$col_icons" \
+		--set topmem label.color="$col_icons" \
+		--set topmem background.height=1 \
+		--set topmem background.padding_right=7 \
+		--set topmem update_freq=2 \
+		--set topmem script="~/.config/sketchybar/plugins/date.sh" \
+
+  # BATTERY STATUS
+  sketchybar -m --add item battery right                      \
+    --set battery script="~/.config/sketchybar/plugins/battery.sh"       \
+                         update_freq=120                       \
+    --set battery icon.padding_left=3 \
+    --set battery icon.padding_right=0 \
+    --set battery icon.color="$col_icons" \
+    --set battery label.color="$col_icons" \
+    --set battery background.height=21 \
+    --set battery background.padding_right=7 \
+    --subscribe battery system_woke power_source_change
   
   # DATE TIME
 	sketchybar -m --add item date_time right \
@@ -96,75 +150,46 @@ sketchybar -m --add item break2 left \
 		--set date_time script="~/.config/sketchybar/plugins/mortality.sh" \
 
 
-  # BATTERY STATUS
-  sketchybar -m --add item battery right                      \
-    --set battery script="~/.config/sketchybar/plugins/battery.sh"       \
-                         update_freq=120                       \
-    --set battery icon.padding_left=3 \
-    --set battery icon.padding_right=0 \
-    --set battery icon.color="$col_icons" \
-    --set battery label.color="$col_icons" \
-    --set battery background.height=21 \
-    --set battery background.padding_right=7 \
-    --subscribe battery system_woke power_source_change
-	
-  # CPU USAGE
-	sketchybar -m --add item cpu_percent right \
-		--set cpu_percent icon="CPU  "\
-		--set cpu_percent icon.padding_left=4 \
-		--set cpu_percent icon.padding_right=0 \
-    --set cpu_percent icon.color="$col_icons" \
-	  --set cpu_percent icon.font="Terminess Nerd Font:Bold:17.0" \
-		--set cpu_percent label.color="$col_icons" \
-		--set cpu_percent background.height=21 \
-		--set cpu_percent background.padding_right=7 \
-		--set cpu_percent update_freq=2 \
-		--set cpu_percent script="~/.config/sketchybar/plugins/cpu.sh" \
+	sketchybar -m --add item break5 right \
+		--set break5 icon=""\
+		--set break5 icon.padding_left=0 \
+		--set break5 icon.padding_right=0 \
+    --set break5 icon.color="$col_seps" \
+		--set break5 label.color="$col_seps" \
+		--set break5 background.padding_right=5 \
+	  --set break5 icon.font="Terminess Nerd Font:Bold:22.0" \
 
-  # clock
-	sketchybar -m --add item mortality right \
-		--set mortality icon="󰥔"\
-		--set mortality icon.padding_left=8 \
-		--set mortality icon.padding_right=2 \
-    --set mortality icon.color="$col_icons" \
-		--set mortality label.color="$col_icons" \
-		--set mortality update_freq=10 \
-		--set mortality background.height=21 \
-		--set mortality background.padding_right=7 \
-		--set mortality script="~/.config/sketchybar/plugins/clock.sh" \
-  
-  # date
-	sketchybar -m --add item topmem right \
-		--set topmem icon="󰃭" \
-		--set topmem icon.padding_left=8 \
-		--set topmem icon.padding_right=0 \
-    --set topmem icon.color="$col_icons" \
-		--set topmem label.color="$col_icons" \
-		--set topmem background.height=21 \
-		--set topmem background.padding_right=7 \
-		--set topmem update_freq=2 \
-		--set topmem script="~/.config/sketchybar/plugins/date.sh" \
+	sketchybar -m --add item break4 left \
+		--set break4 icon=""\
+		--set break4 icon.padding_left=0 \
+		--set break4 icon.padding_right=0 \
+    --set break4 icon.color="$col_seps" \
+		--set break4 label.color="$col_seps" \
+		--set break4 background.padding_right=5 \
+	  --set break4 icon.font="Terminess Nerd Font:Bold:22.0" \
 
 #-------------------------------#
 #---------- aerospace ----------#
 #-------------------------------#
-LABELS=("󰜫" "" "" "" "󰙏" "󰓇" "" "󰑴" "󰖌")
+LABELS=("󰜫" "" "" "" "󰙏" "󰓇" "" "󰑴" "" "󰌪")
 INDEX=0
 
 for sid in $(aerospace list-workspaces --all); do
     label="${LABELS[$INDEX]}"
     
-    sketchybar --add item space.$sid left \
+    sketchybar --add item space.$sid center \
         --subscribe space.$sid aerospace_workspace_change \
         --set space.$sid \
         background.color="$col_seps" \
-        background.corner_radius=8 \
-        background.height=35 \
+        background.corner_radius=1 \
+        background.height=40 \
         background.drawing=off \
+        background.padding_left=18 \
+        background.padding_right=18 \
         icon.padding_left=0 \
         icon.padding_right=0 \
-        label.padding_left=15 \
-        label.padding_right=15 \
+        label.padding_left=30 \
+        label.padding_right=30 \
         label.color=0xff493628 \
 		    update_freq=1 \
         label.color="$col_spaces" \
