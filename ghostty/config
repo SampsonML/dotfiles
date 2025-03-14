@@ -1,0 +1,25 @@
+theme = IR_Black  
+font-family = Iosevka Nerd Font
+font-size = 23
+background-opacity = 0.60
+background-blur-radius = 200
+macos-titlebar-style = hidden
+
+
+# shaders 
+#custom-shader = shaders/glitchy.glsl 
+#custom-shader = shaders/bettercrt.glsl 
+#custom-shader = shaders/bloom.glsl 
+#custom-shader = shaders/water.glsl 
+#custom-shader = shaders/underwater.glsl 
+#custom-shader = shaders/tft.glsl 
+#custom-shader = shaders/retro-terminal.glsl 
+#custom-shader = shaders/drunkard.glsl 
+#custom-shader = shaders/dither.glsl 
+#custom-shader = shaders/crt.glsl 
+#custom-shader = shaders/matrix-hallway.glsl
+#custom-shader = shaders/in-game-crt.glsl
+#custom-shader = shaders/glow-rgbsplit-twitchy.glsl
+#custom-shader = shaders/sin-interference.glsl
+#custom-shader = shaders/inside-the-matrix.glsl
+custom-shader-animation = always 
