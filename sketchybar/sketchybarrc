@@ -1,24 +1,41 @@
+# add interactive new mac logo
+source "$HOME/.config/sketchybar/items/apple.sh"
+
 # --- everforest colors --- #
 everforest_brown=0xff493628
-everforest_green=0xff91a87a
+everforest_green=0xee91a87a
+everforest_green2=0xff91a87a
 everforest_yellow=0xffD3C6AA 
 everforest_blue=0xff5E81AC 
 everforest_purple=0xffb48ead
 everforest_red=0xffbf616a
-everforest_orange=0xffd08770
+everforest_orange=0xfff0bc75
 everforest_aqua=0xff8fbcbb
 everforest_gray=0xff4c566a
 everforest_white=0xffD3C6AA
+true_black=0xff000000
+deep_purple=0xff5f457f
+# --- tokyonight colors --- #
+tokyo_light_purple=0xff9d7cd8
+tokyo_dark_purple=0xff6A669D
+tokyo_blue=0xff181e49
+tokyo_dark_blue=0xff151f3a
+tokyo_green=0x001d3220
+tokyo_yellow=0xffffc777
+tokyo_black=0xff000000
+tokyo_white=0xffE5E3D4
+icon_col=0xddffffff 
 
 # --- matts colors --- #
-col_seps="$everforest_brown"
-col_icons="$everforest_white"
-col_spaces="$everforest_brown"
-col_bar="$everforest_green"  
+col_seps="$icon_col"
+col_icons="$tokyo_white"
+col_spaces="$tokyo_white"
+col_bar="$tokyo_green"  
+col_lines=0x00ffffff
 
 ############## BAR ############## 
 	sketchybar -m --bar \
-		height=78 \
+		height=88 \
 		position=left \
 		padding_left=7 \
 		padding_right=3 \
@@ -36,9 +53,9 @@ col_bar="$everforest_green"
 		updates=when_shown \
 		drawing=on \
 		cache_scripts=on \
-		icon.font="Monofur Nerd Font:Bold:15.0" \
+		icon.font="Iosevka Nerd Font:Bold:15.0" \
 		icon.color=0xffffffff \
-		label.font="Monofur Nerd Font:Bold:15.0" \
+		label.font="Ioseva Nerd Font:Bold:15.0" \
 		label.color=0xffeceff4 \
 		label.highlight_color=0xffffffff 
 
@@ -52,16 +69,13 @@ col_bar="$everforest_green"
 		background.padding_left=20 \
     background.padding_right=20 \
 
-# add interactive new mac logo
-source "$HOME/.config/sketchybar/items/apple.sh"
-
 sketchybar -m --add item break2 left \
 	--set break2 icon=""\
 	--set break2 icon.padding_left=0 \
 	--set break2 icon.padding_right=20 \
   --set break2 label.padding_right=50 \
-  --set break2 icon.color="$col_seps" \
-	--set break2 label.color="$col_seps" \
+  --set break2 icon.color="$col_lines" \
+	--set break2 label.color="$col_icons" \
 	--set break2 background.padding_right=8 \
 	--set break2 icon.font="Terminess Nerd Font:Bold:22.0" \
 
@@ -78,7 +92,7 @@ sketchybar -m --add item break2 left \
 
 	# DATE TIME
 	sketchybar -m --add item logo right \
-		--set logo icon=""\
+		--set logo icon="󱎷"\
 		--set logo icon.padding_left=12 \
 		--set logo icon.padding_right=2 \
     --set logo icon.color="$col_icons" \
@@ -86,16 +100,8 @@ sketchybar -m --add item break2 left \
 		--set logo background.padding_right=25 \
 		--set logo background.padding_left=20 \
     --set logo background.color=0x00ffffff \
-	  --set logo icon.font="Terminess Nerd Font:Bold:26.0" \
+	  --set logo icon.font="Terminess Nerd Font:Bold:33.0" \
 
-	sketchybar -m --add item break right \
-		--set break icon=""\
-		--set break icon.padding_left=0 \
-		--set break icon.padding_right=0 \
-    --set break icon.color="$col_seps" \
-		--set break label.color="$col_seps" \
-		--set break background.padding_right=2 \
-	  --set break icon.font="Terminess Nerd Font:Bold:22.0" \
  
   # clock
 	sketchybar -m --add item mortality left \
@@ -111,11 +117,11 @@ sketchybar -m --add item break2 left \
 		--set mortality background.padding_left=10 \
 		--set mortality background.padding_right=10 \
 		--set mortality script="~/.config/sketchybar/plugins/clock.sh" \
-		--set mortality icon.font="Monofur Nerd Font:Bold:17.0" \
+		--set mortality label.font="Hurmit Nerd Font:Bold:14.0" \
 
   # date
 	sketchybar -m --add item topmem left\
-		--set topmem icon="󰃭" \
+		--set topmem icon="" \
 		--set topmem icon.padding_left=2 \
 		--set topmem icon.padding_right=0 \
     --set topmem icon.color="$col_icons" \
@@ -123,6 +129,7 @@ sketchybar -m --add item break2 left \
 		--set topmem background.height=1 \
 		--set topmem background.padding_right=7 \
 		--set topmem update_freq=2 \
+		--set topmem label.font="Hurmit Nerd Font:Bold:14.0" \
 		--set topmem script="~/.config/sketchybar/plugins/date.sh" \
 
   # BATTERY STATUS
@@ -135,71 +142,88 @@ sketchybar -m --add item break2 left \
     --set battery label.color="$col_icons" \
     --set battery background.height=21 \
     --set battery background.padding_right=7 \
+	  --set battery label.font="Hurmit Nerd Font:Bold:16.0" \
+	  --set battery icon.font="Hurmit Nerd Font:Bold:17.0" \
     --subscribe battery system_woke power_source_change
   
   # DATE TIME
 	sketchybar -m --add item date_time right \
-		--set date_time icon=" "\
+		--set date_time icon=""\
 		--set date_time icon.padding_left=2 \
 		--set date_time icon.padding_right=2 \
     --set date_time icon.color="$col_icons" \
 		--set date_time label.color="$col_icons" \
 		--set date_time update_freq=1 \
-		--set date_time background.height=21 \
 		--set date_time background.padding_right=10 \
+		--set date_time background.padding_left=10 \
+    --set date_time background.corner_radius=20 \
+    --set date_time background.height=30 \
+		--set date_time label.font="Hurmit Nerd Font:Bold:15.0" \
 		--set date_time script="~/.config/sketchybar/plugins/mortality.sh" \
 
 
-	sketchybar -m --add item break5 right \
-		--set break5 icon=""\
-		--set break5 icon.padding_left=0 \
-		--set break5 icon.padding_right=0 \
-    --set break5 icon.color="$col_seps" \
-		--set break5 label.color="$col_seps" \
-		--set break5 background.padding_right=5 \
-	  --set break5 icon.font="Terminess Nerd Font:Bold:22.0" \
+	#sketchybar -m --add item break5 right \
+	#	--set break5 icon=""\
+	#	--set break5 icon.padding_left=0 \
+	#	--set break5 icon.padding_right=0 \
+  #  --set break5 icon.color="$col_lines" \
+	#	--set break5 label.color="$col_icons" \
+	#	--set break5 background.padding_right=5 \
+	#  --set break5 icon.font="Terminess Nerd Font:Bold:22.0" \
 
-	sketchybar -m --add item break4 left \
-		--set break4 icon=""\
-		--set break4 icon.padding_left=0 \
-		--set break4 icon.padding_right=0 \
-    --set break4 icon.color="$col_seps" \
-		--set break4 label.color="$col_seps" \
-		--set break4 background.padding_right=5 \
-	  --set break4 icon.font="Terminess Nerd Font:Bold:22.0" \
 
 #-------------------------------#
 #---------- aerospace ----------#
 #-------------------------------#
-LABELS=("󰜫" "" "" "" "󰙏" "󰓇" "" "󰑴" "" "󰌪")
+LABELS=("󰜫" "" "" "" "" "󰓇" "" "󰑴" "" "󰌪")
+LABELS2=("󰬺" "󰬻" "󰬼" "󰬽" "󰬾" "󰬿" "󰭀" "󰭁" "󰭂" "󰿩")
 INDEX=0
+
+# detect for external monitor
+source "$HOME/.config/sketchybar/items/monitor_detect.sh"
+
+if [ "$EXTERNAL_MONITOR_CONNECTED" = true ]; then
+    # External monitor is connected
+    pad_height=40
+    font_label="Iosevka Nerd Font:Bold:30.0"
+    font_icon="Iosevka Nerd Font:Bold:23.0"
+else
+    # External monitor is not connected
+    pad_height=20
+    font_label="Iosevka Nerd Font:Bold:26.0"
+    font_icon="Iosevka Nerd Font:Bold:20.0"
+fi
+# end of external monitor checking
 
 for sid in $(aerospace list-workspaces --all); do
     label="${LABELS[$INDEX]}"
+    label2="${LABELS2[$INDEX]}"
     
     sketchybar --add item space.$sid center \
         --subscribe space.$sid aerospace_workspace_change \
         --set space.$sid \
         background.color="$col_seps" \
-        background.corner_radius=1 \
-        background.height=40 \
+        background.corner_radius=100 \
+        background.height=54 \
         background.drawing=off \
-        background.padding_left=18 \
-        background.padding_right=18 \
+        background.padding_left="$pad_height" \
+        background.padding_right="$pad_height" \
+        icon.font="$font_icon" \
+        icon.color="$col_spaces" \
         icon.padding_left=0 \
         icon.padding_right=0 \
-        label.padding_left=30 \
-        label.padding_right=30 \
-        label.color=0xff493628 \
+        label.padding_left=17 \
+        label.padding_right=17 \
 		    update_freq=1 \
         label.color="$col_spaces" \
-	      label.font="Terminess Nerd Font:Bold:24.0" \
+	      label.font="$font_label" \
         label="$label" \
         click_script="aerospace workspace $sid" \
         script="~/.config/sketchybar/plugins/aerospace.sh $sid $focus_sid"
     
     INDEX=$((INDEX + 1))
 done
+
 
 # Handle workspace changes
 sketchybar --add event aerospace_workspace_change 
