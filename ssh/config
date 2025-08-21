@@ -1,17 +1,3 @@
-# Gadi in Australia
-Host gadi
-Hostname gadi.nci.org.au
-User ms1939
-
-Host Avatar
-Hostname avatar.anu.edu.au
-User sampsonm
-ProxyCommand ssh -q -a -Y sampsonm@msossh1.anu.edu.au nc %h %p
-
-Host MSO
-Hostname msossh1.anu.edu.au
-User sampsonm
-
 # Princeton HPCs
 Host nobel
 Hostname nobel.princeton.edu
@@ -62,22 +48,3 @@ User ms0821
 Host stella
 Hostname stellar.princeton.edu
 User ms0821
-
-# Tiger for LSST and HSC data
-Host tiger
-    Hostname tiger2-sumire.princeton.edu
-    User ms0821
-
-
-#Host tigressgateway
-#    HostName tigressgateway.princeton.edu
-    
-#Host tiger* perseus* tigressdata*
-#    ProxyCommand ssh -q -W %h:%p tigressgateway.princeton.edu
-
-#Host tiger
-#    Hostname tiger2-sumire.princeton.edu
-#    User ms0821
-#    ControlMaster auto
-#    ControlPath ~/.ssh/controlmaster-%r@%h:%p
-#    ControlPersist 10m
