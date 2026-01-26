@@ -17,15 +17,15 @@ after-startup-command = []
 #]
 
 # notify simple-bar of changes
-on-focus-changed = [
-  "exec-and-forget osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-index-jsx\"'",
-]
+#on-focus-changed = [
+#  "exec-and-forget osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-index-jsx\"'",
+#]
 
-exec-on-workspace-change = [
-  '/bin/zsh',
-  '-c',
-  '/usr/bin/osascript -e "tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-index-jsx\""',
-]
+#exec-on-workspace-change = [
+#  '/bin/zsh',
+#  '-c',
+#  '/usr/bin/osascript -e "tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-index-jsx\""',
+#]
 
 # Start AeroSpace at login
 start-at-login = true
@@ -37,7 +37,7 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
 # You can set 0 to disable the padding feature
-accordion-padding = 100 #1231
+accordion-padding = 1273 #1231
 
 # Possible values: tiles|accordion
 default-root-container-layout = 'tiles'
@@ -66,12 +66,12 @@ on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 #                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
 #                 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 [gaps]
-inner.horizontal = 10
-inner.vertical =   10
-outer.left =       12
-outer.bottom =     12
-outer.top =        [{ monitor."Built-in Retina Display" = 15 }, 45] # 15 for built-in display, 45 for external monitor
-outer.right =      12
+inner.horizontal = 6
+inner.vertical =   6
+outer.left =       75
+outer.bottom =     9
+outer.top =        [{ monitor."Built-in Retina Display" = 2 }, 12] # 15 for built-in display, 45 for external monitor
+outer.right =      7
 
 
 # 'main' binding mode declaration
