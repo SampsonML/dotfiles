@@ -15,12 +15,13 @@ tmux set -g status-right-length 150
 
 RESET="#[fg=#a9b1d6,bg=#1A1B26,nobold,noitalics,nounderscore,nodim]"
 # Highlight colors
-tmux set -g mode-style "fg=#41a6b5,bg=#ffffff" # 2A2F41
-tmux set -g message-style "bg=#1e1e1e,fg=#ffffff"
-tmux set -g message-command-style "fg=#ffffff,bg=#1e1e1e"
+tmux set -g mode-style "fg=#41a6b5,bg=#2A2F41"
 
-tmux set -g pane-border-style "fg=#ffffff"
-tmux set -g pane-active-border-style "fg=#4a188f"
+tmux set -g message-style "bg=#7aa2f7,fg=#1A1B26"
+tmux set -g message-command-style "fg=#c0caf5,bg=#414868"
+
+tmux set -g pane-border-style "fg=#2A2F41"
+tmux set -g pane-active-border-style "fg=#7aa2f7"
 tmux set -g pane-border-status off
 
 tmux set -g status-style bg="default"
@@ -51,13 +52,13 @@ battery_status="#($SCRIPTS_PATH/battery-widget.sh)"
 
 #+--- Bars LEFT ---+
 # Session name
-tmux set -g status-left "#[fg=yellow,bg=#1e1e1e,bold] #{?client_prefix,󰠠 ,#[dim]󰤂 }#[fg=#ffffff,bg=#1e1e1e,bold,nodim]#S $RESET"
+tmux set -g status-left "#[fg=#FFFFFF,bg=#6441a5,bold] #{?client_prefix,󰠠 ,#[dim]󰤂 }#[fg=#ffffff,bg=#6441a5,bold,nodim]#S $RESET"
 
 #+--- Windows ---+
 # Focus
-tmux set -g window-status-current-format "#[fg=#ffffff,bg=#16181a]  |  #[fg=#ffffff]$window_number #[bold,nodim]#W#[nobold,dim]#{?window_zoomed_flag, $zoom_number, $custom_pane} #{?window_last_flag,,} "
+tmux set -g window-status-current-format "#[fg=#44dfaf,bg=#1A1B26]   #[fg=#a9b1d6]$window_number #[bold,nodim]#W#[nobold,dim]#{?window_zoomed_flag, $zoom_number, $custom_pane} #{?window_last_flag,,} "
 # Unfocused
-tmux set -g window-status-format "|#[fg=#ffffff,bg=default,none,dim]   $window_number #W#[nobold,dim]#{?window_zoomed_flag, $zoom_number, $custom_pane}#[fg=yellow,blink] #{?window_last_flag,󰁯 ,} "
+tmux set -g window-status-format "#[fg=#c0caf5,bg=default,none,dim]   $window_number #W#[nobold,dim]#{?window_zoomed_flag, $zoom_number, $custom_pane}#[fg=yellow,blink] #{?window_last_flag,󰁯 ,} "
 
 #+--- Bars RIGHT ---+
 tmux set -g status-right ""
