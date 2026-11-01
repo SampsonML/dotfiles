@@ -3,11 +3,11 @@
 **For:** a Claude Code agent setting up a fresh Omarchy install (target: Lenovo ThinkPad T14s) to match the source machine, a desktop mini PC with Omarchy 4.0.6, tmux 3.8, Ghostty 1.4.0, Starship 1.27.0 and Hyprland 0.56.2.
 
 The look is a "modern hacker but professional" cyberdeck style:
-- **Colours:** a pastel palette on a near-black background.
+- **Colours:** taken from the main wallpaper: copper, teal, golden olive and moss on a night-indigo, near-black background.
 - **tmux:** a pill-shaped status bar, panes labelled by role, transparent panes, a command menu and session codenames.
 - **Ghostty:** a see-through background with blur.
-- **Omarchy theme "cyberdeck":** a custom colour theme with a generated night-sky wallpaper.
-- **Hyprland:** a rotating lavender-to-cyan border on the focused window, a faint glow and square corners.
+- **Omarchy theme "cyberdeck":** a custom colour theme. The main wallpaper is a long-exposure night photo of a flowering hillside, downloaded from the user's GitHub repo, with two generated backup wallpapers.
+- **Hyprland:** a rotating copper-to-teal border on the focused window, a faint glow and square corners.
 - **Prompt:** a two-line Starship prompt.
 - **Top bar:** a larger bar font.
 
@@ -28,7 +28,7 @@ Every file below is the exact content from the source machine.
 
 1. **Hostname:** what should the machine be called? The source machine is `mini-beast`. The name shows in the tmux status row and the prompt. Have the user run `hostnamectl set-hostname <name>` in their terminal; it goes through polkit.
 2. **Rotating border:** on a laptop this redraws continuously and costs a little battery. Ask whether to keep it (section 6).
-3. **Wallpaper:** copy the PNGs from the source machine, or regenerate them on this one (section 5c)?
+3. **Wallpaper repo URL:** section 5c downloads the main wallpaper (`dr-hero-bg.webp`) from the user's GitHub repo. If `<REPO-RAW-URL>` in section 5c is still a placeholder, ask the user for the link to the image in their repo. If the repo is private, ask them to run `gh auth login` first (section 5c explains how to download it).
 
 ## 2. Packages and fonts
 
@@ -175,10 +175,10 @@ set-option -g default-terminal "screen-256color"
 # Initialize TMUX plugin manager 
 run '~/.tmux/plugins/tpm/tpm'
 
-# Prefix indicator: session pill (rounded Nerd Font caps U+E0B6/U+E0B4) is lavender (#cba6f7) and turns mint (#b5ead7, matches the focused
+# Prefix indicator: session pill (rounded Nerd Font caps U+E0B6/U+E0B4) is copper (#d08a52) and turns moss (#9fb565, matches the focused
 # window icon) with a keyboard icon (U+F11C) while prefix is active.
 # Kept after the TPM run line so the theme plugin doesn't overwrite it.
-set -g status-left "#{?client_prefix,#[fg=#b5ead7],#[fg=#cba6f7]}#[bg=default]#[fg=#1a1b26 bold]#{?client_prefix,#[bg=#b5ead7] ,#[bg=#cba6f7]}#S#[nobold bg=default]#{?client_prefix,#[fg=#b5ead7],#[fg=#cba6f7]}#[default] "
+set -g status-left "#{?client_prefix,#[fg=#9fb565],#[fg=#d08a52]}#[bg=default]#[fg=#0e0d12 bold]#{?client_prefix,#[bg=#9fb565] ,#[bg=#d08a52]}#S#[nobold bg=default]#{?client_prefix,#[fg=#9fb565],#[fg=#d08a52]}#[default] "
 
 # --- Transparent panes ---
 # Omarchy's omarchy-theme-set-tmux sets window-style/window-active-style to the theme
@@ -195,14 +195,14 @@ set -g window-active-style default
 # HUD readout on the right of the status bar, as rounded pills. The tmux-cpu scripts are called
 # directly because the theme clears status-right before tmux-cpu could fill in
 # its #{cpu_percentage}/#{ram_percentage} placeholders.
-set -g status-right "#[fg=#a5d8ff bg=default]#[fg=#1a1b26 bg=#a5d8ff]CPU #(~/.config/tmux/plugins/tmux-cpu/scripts/cpu_percentage.sh)#[fg=#a5d8ff bg=default]#[default] #[fg=#f5c2e7 bg=default]#[fg=#1a1b26 bg=#f5c2e7]MEM #(~/.config/tmux/plugins/tmux-cpu/scripts/ram_percentage.sh)#[fg=#f5c2e7 bg=default]#[default] #[fg=#b5ead7 bg=default]#[fg=#1a1b26 bg=#b5ead7]%H:%M:%S#[fg=#b5ead7 bg=default]#[default] "
+set -g status-right "#[fg=#6fb3b8 bg=default]#[fg=#0e0d12 bg=#6fb3b8]CPU #(~/.config/tmux/plugins/tmux-cpu/scripts/cpu_percentage.sh)#[fg=#6fb3b8 bg=default]#[default] #[fg=#d8c07a bg=default]#[fg=#0e0d12 bg=#d8c07a]MEM #(~/.config/tmux/plugins/tmux-cpu/scripts/ram_percentage.sh)#[fg=#d8c07a bg=default]#[default] #[fg=#9fb565 bg=default]#[fg=#0e0d12 bg=#9fb565]%H:%M:%S#[fg=#9fb565 bg=default]#[default] "
 set -g status-interval 1
 
-# Neon pane borders: heavy lines, coral active pane, a role label on each pane
+# Neon pane borders: heavy lines, ember red active pane, a role label on each pane
 set -g pane-border-lines heavy
 set -g pane-border-indicators arrows
-set -g pane-border-style "fg=#3b4261"
-set -g pane-active-border-style "fg=#ff9e9e"
+set -g pane-border-style "fg=#2e3148"
+set -g pane-active-border-style "fg=#d9705a"
 set -g pane-border-status top
 
 # Pane role: a sci-fi name based on the program running in the pane.
@@ -218,10 +218,10 @@ set -g @pane-role "\
 #{?#{m/r:^(man|less|bat)$,#{pane_current_command}},DOCS,\
 #{?#{m/r:^(bash|zsh|fish|sh)$,#{pane_current_command}},TERMINAL,\
 PROCESS}}}}}}}}}"
-set -g pane-border-format " #{?pane_active,#[fg=#ff9e9e bold]▷,#[fg=#565f89]▷} #{E:@pane-role} :: #{pane_current_command} "
+set -g pane-border-format " #{?pane_active,#[fg=#d9705a bold]▷,#[fg=#5c6170]▷} #{E:@pane-role} :: #{pane_current_command} "
 
 # Command deck menu (prefix Space). Replaces the default next-layout binding.
-bind Space display-menu -T "#[fg=#f5c2e7 bold]◢ COMMAND DECK ◣" -x C -y C \
+bind Space display-menu -T "#[fg=#d8c07a bold]◢ COMMAND DECK ◣" -x C -y C \
   "Split  ⇆"        | "split-window -h" \
   "Split  ⇅"        - "split-window -v" \
   "Zoom node"       z "resize-pane -Z" \
@@ -230,18 +230,18 @@ bind Space display-menu -T "#[fg=#f5c2e7 bold]◢ COMMAND DECK ◣" -x C -y C \
   "" \
   "Terminate node"  x "kill-pane"
 
-# --- Pastel bar ---
+# --- Pill bar ---
 # Window tabs as rounded pills (Nerd Font caps U+E0B6/U+E0B4), using the theme's icons and
-# number scripts: baby-blue pill for the focused window, dark pill with a peach
+# number scripts: teal pill for the focused window, dark pill with a golden-olive
 # "last window" marker for the others.
-set -g window-status-current-format " #[fg=#a5d8ff bg=default]#[fg=#1a1b26 bg=#a5d8ff] #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #I fsquare) #[bold]#W#[nobold]#{?window_zoomed_flag, #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P dsquare), #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P hsquare)}#[fg=#a5d8ff bg=default]#[default]"
-set -g window-status-format " #[fg=#2a2f41 bg=default]#[fg=#a9b1d6 bg=#2a2f41] #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #I fsquare) #W#{?window_zoomed_flag, #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P dsquare), #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P hsquare)}#{?window_last_flag,#[fg=#ffd6a5] 󰁯,}#[fg=#2a2f41 bg=default]#[default]"
+set -g window-status-current-format " #[fg=#6fb3b8 bg=default]#[fg=#0e0d12 bg=#6fb3b8] #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #I fsquare) #[bold]#W#[nobold]#{?window_zoomed_flag, #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P dsquare), #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P hsquare)}#[fg=#6fb3b8 bg=default]#[default]"
+set -g window-status-format " #[fg=#23263d bg=default]#[fg=#9fa39f bg=#23263d] #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #I fsquare) #W#{?window_zoomed_flag, #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P dsquare), #(~/.config/tmux/plugins/tokyo-night-tmux/src/custom-number.sh #P hsquare)}#{?window_last_flag,#[fg=#d8c07a] 󰁯,}#[fg=#23263d bg=default]#[default]"
 # tmux underlines the focused tab by default (window-status-current-style underscore)
 set -g window-status-current-style default
-set -g message-style "fg=#1a1b26,bg=#cba6f7"
-set -g message-command-style "fg=#cba6f7,bg=#1a1b26"
-set -g menu-border-style "fg=#cba6f7"
-set -g menu-selected-style "fg=#1a1b26,bg=#cba6f7"
+set -g message-style "fg=#0e0d12,bg=#d08a52"
+set -g message-command-style "fg=#d08a52,bg=#0e0d12"
+set -g menu-border-style "fg=#d08a52"
+set -g menu-selected-style "fg=#0e0d12,bg=#d08a52"
 
 # --- Session codenames ---
 # New sessions that tmux would name 0, 1, 2... get a codename like NEXUS-7F3A.
@@ -249,10 +249,10 @@ set -g menu-selected-style "fg=#1a1b26,bg=#cba6f7"
 set-hook -g session-created 'run-shell "~/.config/tmux/scripts/codename.sh #{q:session_id} #{q:session_name}"'
 
 # --- Second status row ---
-# Centred host / kernel / uptime readout inside a lavender outline pill
+# Centred host / kernel / uptime readout inside a copper outline pill
 # (thin rounded Nerd Font caps U+E0B7 / U+E0B5).
 set -g status 2
-set -g status-format[1] "#[align=centre]#[fg=#cba6f7] #[fg=#565f89]HOST #[fg=#a5d8ff]#H #[fg=#565f89]· KERNEL #[fg=#f5c2e7]#(uname -r) #[fg=#565f89]· UPTIME #[fg=#b5ead7]#(~/.config/tmux/scripts/uptime.sh) #[fg=#cba6f7]"
+set -g status-format[1] "#[align=centre]#[fg=#d08a52] #[fg=#5c6170]HOST #[fg=#6fb3b8]#H #[fg=#5c6170]· KERNEL #[fg=#d8c07a]#(uname -r) #[fg=#5c6170]· UPTIME #[fg=#9fb565]#(~/.config/tmux/scripts/uptime.sh) #[fg=#d08a52]"
 ```
 
 `~/.config/tmux/scripts/codename.sh`:
@@ -306,12 +306,12 @@ A personal tmux configuration directory (`~/.config/tmux`), not a software proje
 - `tmux.conf` is the only file tmux loads. It sets the core options and keybindings (vim-style `h/j/k/l` pane navigation, `|`/`-` splits, windows numbered from 1, status bar at the top) and declares plugins through TPM. The file has two halves around `run '~/.tmux/plugins/tpm/tpm'`:
   - **Before the `run` line:** `@plugin` declarations (TPM reads these when it runs), `@tokyo-night-tmux_*` options, and core settings the theme doesn't touch.
   - **After the `run` line:** anything the theme sets when it loads, because it would otherwise overwrite these. This includes `status-left`, `status-right`, the window tab formats, `pane-border-*`, `message-style`, `menu-*` styles, `status 2` / `status-format[1]` and the `session-created` hook. Don't move these above the `run` line.
-- The "cyberdeck" look is all in the after-TPM section. Its palette is pastel: lavender `#cba6f7`, pink `#f5c2e7`, baby blue `#a5d8ff`, mint `#b5ead7`, peach `#ffd6a5`, with `#565f89` for dim text. It includes:
+- The "cyberdeck" look is all in the after-TPM section. Its colours come from the main wallpaper (a long-exposure night hillside): copper `#d08a52` (accent), teal `#6fb3b8`, golden olive `#d8c07a`, moss `#9fb565`, ember red `#d9705a`, dark indigo `#23263d` for inactive pills, `#5c6170` for dim text and `#0e0d12` for text on pills. It includes:
   - a CPU/MEM/clock display in `status-right`
-  - pane borders labelled by role, e.g. `▷ EDITOR :: nvim` (active pane in red alert coral `#ff9e9e`). The program-to-role mapping is the `@pane-role` user option, a chain of `#{m/r:...}` regex matches ending in a `PROCESS` fallback
+  - pane borders labelled by role, e.g. `▷ EDITOR :: nvim` (active pane in ember red `#d9705a`). The program-to-role mapping is the `@pane-role` user option, a chain of `#{m/r:...}` regex matches ending in a `PROCESS` fallback
   - a `prefix Space` command-deck menu, which replaces tmux's default `next-layout` binding
-  - a second status row showing host, kernel and uptime (centred, between thin lavender rounded caps U+E0B7 and U+E0B5 that act as an outline pill)
-  - the session name and window tabs drawn as rounded pills using Nerd Font caps (U+E0B6 and U+E0B4). The tabs reuse the theme's icons and `custom-number.sh` scripts: a baby-blue pill for the focused window and a dark `#2a2f41` pill for the others
+  - a second status row showing host, kernel and uptime (centred, between thin copper rounded caps U+E0B7 and U+E0B5 that act as an outline pill)
+  - the session name and window tabs drawn as rounded pills using Nerd Font caps (U+E0B6 and U+E0B4). The tabs reuse the theme's icons and `custom-number.sh` scripts: a teal pill for the focused window and a dark `#23263d` pill for the others
 - `status-right` calls the `tmux-cpu` scripts directly (`plugins/tmux-cpu/scripts/*.sh`), not through its `#{cpu_percentage}` placeholders. The theme clears `status-right` before `tmux-cpu` can fill in the placeholders, so they would never be replaced.
 - Panes are kept transparent so Ghostty's `background-opacity` shows through. On every theme change Omarchy's `omarchy-theme-set-tmux` sets `window-style`/`window-active-style` to the theme background and sends OSC 11 to each pane. `tmux.conf` resets both styles to `default`, and the Omarchy hook `~/.config/omarchy/hooks/theme-set.d/tmux-transparent` resets them again after each theme change and sends OSC 111 to every pane. Don't add a `bg=` to `window-style` or `window-active-style`, because it would make the panes solid again.
 - `scripts/` holds helper scripts that `tmux.conf` calls:
@@ -405,46 +405,47 @@ mkdir -p ~/.config/omarchy/themes/cyberdeck/backgrounds
 `~/.config/omarchy/themes/cyberdeck/colors.toml`:
 
 ```toml
-# Cyberdeck: near-black blue-violet base with the pastel palette from the tmux bar
-# (~/.config/tmux/tmux.conf). Lavender is the accent, hologram cyan the second colour,
-# mint / coral / peach for status colours.
+# Cyberdeck: colours taken from the main wallpaper (long-exposure night hillside):
+# warm near-black and night-indigo base, copper light-trail accent, teal trail fringe,
+# moss and golden-olive greens, pale flower white for text. Shared with the tmux bar
+# (~/.config/tmux/tmux.conf) and the Starship prompt.
 
 mode = "dark"
 
-accent = "#cba6f7"
-selection = "#2a2f41"
-muted = "#565f89"
+accent = "#d08a52"
+selection = "#26294a"
+muted = "#5c6170"
 
-background = "#0d0e15"
-dark_background = "#0a0b10"
-darker_background = "#07080c"
-lighter_background = "#1a1c28"
+background = "#0e0d12"
+dark_background = "#0b0a0e"
+darker_background = "#08070a"
+lighter_background = "#1c1d2e"
 
-foreground = "#c8cde8"
-dark_foreground = "#8a91b4"
-light_foreground = "#dde1f5"
-bright_foreground = "#f0f2fc"
+foreground = "#dde2da"
+dark_foreground = "#9fa39f"
+light_foreground = "#e8ece4"
+bright_foreground = "#f4f6f1"
 
-red = "#ff9e9e"
-green = "#a6e3a1"
-yellow = "#f9e2af"
-orange = "#ffc777"
-blue = "#a5d8ff"
-magenta = "#cba6f7"
-cyan = "#89ddff"
-brown = "#8a6f4d"
+red = "#d9705a"
+green = "#9fb565"
+yellow = "#d8c07a"
+orange = "#d08a52"
+blue = "#8c97d6"
+magenta = "#a99bd8"
+cyan = "#6fb3b8"
+brown = "#7a5a3a"
 
-bright_red     = "#ffb8b8"
-bright_green   = "#c0eebc"
-bright_yellow  = "#fcecc9"
-bright_blue    = "#c3e5ff"
-bright_magenta = "#ddc4fa"
-bright_cyan    = "#b0e9ff"
+bright_red     = "#e8907c"
+bright_green   = "#bccd8e"
+bright_yellow  = "#e8d59e"
+bright_blue    = "#adb5e4"
+bright_magenta = "#c4b9e6"
+bright_cyan    = "#96cbcf"
 
-# Active window: lavender -> hologram cyan gradient (rotated by the borderangle
-# animation in ~/.config/hypr/looknfeel.lua). Inactive: dim slate.
-hyprland_active_border = "rgba(cba6f7ee) rgba(89ddffee) 45deg"
-hyprland_inactive_border = "rgba(2a2f41aa)"
+# Active window: copper -> teal gradient, like the light trails (rotated by the
+# borderangle animation in ~/.config/hypr/looknfeel.lua). Inactive: night indigo.
+hyprland_active_border = "rgba(d08a52ee) rgba(6fb3b8ee) 45deg"
+hyprland_inactive_border = "rgba(26294aaa)"
 ```
 
 `~/.config/omarchy/themes/cyberdeck/icons.theme`:
@@ -457,10 +458,40 @@ Compare these against a stock theme to make sure the theme format hasn't changed
 
 ### 5c. Wallpapers
 
-There are two wallpapers, `1-nightfield.png` (the main one) and `2-grid.png`, both 1920x1200. The T14s panel is 16:10: either 1920x1200, or 2880x1800 on the 2.8K OLED (check with `hyprctl monitors`).
+There are three wallpapers in `~/.config/omarchy/themes/cyberdeck/backgrounds/`. Omarchy cycles through them in filename order with `omarchy theme bg next`.
 
-- **Quickest:** copy `~/.config/omarchy/themes/cyberdeck/backgrounds/*.png` and `nightfield.sh` from the source machine.
-- **Otherwise:** regenerate them as below. Then, if the panel is 2880x1800, upscale with `magick in.png -resize 2880x1800 out.png`. The image is soft, so upscaling looks fine.
+| File | What it is | Source |
+|---|---|---|
+| `0-perplexity-hero.png` | **Main wallpaper.** A long-exposure night photo: indigo sky, copper and teal light trails, a flash-lit hillside with white flowers | `dr-hero-bg.webp` in the user's GitHub repo, cropped |
+| `1-nightfield.png` | A generated, original take on the same style | `nightfield.sh` below |
+| `2-grid.png` | A dark grid with copper and cyan glows | the `magick` command below |
+
+The T14s panel is 16:10: either 1920x1200, or 2880x1800 on the 2.8K OLED. Check with `hyprctl monitors`, and set `W`/`H` below to match.
+
+**Main wallpaper, from the repo.** The source image is 2757x1379 (2:1), so crop it from the centre to 16:10 and then scale it to the screen size.
+
+```bash
+# Replace with the raw link to dr-hero-bg.webp in the user's repo.
+# A GitHub page link (https://github.com/<user>/<repo>/blob/<branch>/<path>/dr-hero-bg.webp) becomes
+#   https://raw.githubusercontent.com/<user>/<repo>/<branch>/<path>/dr-hero-bg.webp
+IMAGE_URL='<REPO-RAW-URL>'
+
+mkdir -p ~/Downloads ~/.config/omarchy/themes/cyberdeck/backgrounds
+curl -fL -o ~/Downloads/dr-hero-bg.webp "$IMAGE_URL"
+# Private repo: curl gets a 404. Use the GitHub CLI instead (after `gh auth login`):
+#   gh api -H 'Accept: application/vnd.github.raw' repos/<user>/<repo>/contents/<path>/dr-hero-bg.webp > ~/Downloads/dr-hero-bg.webp
+
+magick identify ~/Downloads/dr-hero-bg.webp        # expect: WEBP 2757x1379
+W=1920 H=1200                                       # 2880 1800 on the 2.8K OLED
+magick ~/Downloads/dr-hero-bg.webp -gravity center -crop 2206x1379+0+0 +repage -resize ${W}x${H}! -quality 95 \
+  ~/.config/omarchy/themes/cyberdeck/backgrounds/0-perplexity-hero.png
+```
+
+On the 2880x1800 panel this upscales the image about 1.3x. The photo is soft, so that looks fine.
+
+This photo is Perplexity's artwork. It's fine as the user's own wallpaper, but don't copy it anywhere public.
+
+**Backup wallpapers.** Either copy `1-nightfield.png`, `2-grid.png` and `nightfield.sh` from the source machine, or regenerate them with the commands below. Both render at 1920x1200; on a 2880x1800 panel, upscale them with `magick in.png -resize 2880x1800 out.png`.
 
 **Night field** is an original long-exposure-style night hillside: an indigo sky, copper and teal light trails, and a flash-lit bushy ridge with pale flowers. It takes about 25 seconds to render. Save this as `~/.config/omarchy/themes/cyberdeck/nightfield.sh`, make it executable, and run `nightfield.sh ~/.config/omarchy/themes/cyberdeck/backgrounds/1-nightfield.png 7`. The last argument is the seed; a different number gives a different hillside.
 
@@ -549,7 +580,7 @@ magick "$T/sky.png" \
   -depth 8 "$OUT"
 ```
 
-**Grid:** a near-black gradient with a faint cyan grid, lavender and cyan glows, and a small corner tag:
+**Grid:** a near-black gradient with a faint cyan grid, copper and cyan glows, and a small corner tag:
 
 ```bash
 cd ~/.config/omarchy/themes/cyberdeck/backgrounds && W=1920 H=1200 && FONT=$(fc-match -f '%{file}' 'Iosevka Nerd Font Mono') && \
@@ -565,10 +596,10 @@ magick -size ${W}x${H} -define gradient:extent=Diagonal radial-gradient:'#141626
 
 ```bash
 omarchy theme set cyberdeck
-omarchy theme bg set ~/.config/omarchy/themes/cyberdeck/backgrounds/1-nightfield.png
+omarchy theme bg set ~/.config/omarchy/themes/cyberdeck/backgrounds/0-perplexity-hero.png
 omarchy theme current          # Cyberdeck
 tmux show -g window-style      # if a tmux server is running: should print 'window-style default' (the hook ran)
-hyprctl getoption general:col.active_border   # gradient data: eecba6f7 ee89ddff 45deg
+hyprctl getoption general:col.active_border   # gradient data: eed08a52 ee6fb3b8 45deg
 ```
 
 ### 5e. Top bar size
@@ -626,18 +657,18 @@ hl.config({
     -- Sharp, square window corners.
     rounding = 0,
 
-    -- Soft lavender glow behind the focused window; none behind the others.
+    -- Soft copper glow behind the focused window; none behind the others.
     shadow = {
       enabled = true,
       range = 8,
       render_power = 3,
-      color = "rgba(cba6f710)",
+      color = "rgba(d08a5210)",
       color_inactive = "rgba(00000000)",
     },
   },
 })
 
--- Slowly rotate the active border's lavender -> cyan gradient.
+-- Slowly rotate the active border's copper -> teal gradient.
 -- This redraws the focused window border continuously; delete this line to keep it static.
 hl.animation({ leaf = "borderangle", enabled = true, speed = 100, bezier = "linear", style = "loop" })
 ```
@@ -647,7 +678,7 @@ The border colours themselves come from the theme (`hyprland_active_border` in `
 ```bash
 hyprctl reload && sleep 1 && hyprctl configerrors     # must print nothing
 hyprctl getoption decoration:rounding                 # int: 0
-hyprctl getoption decoration:shadow:color             # gradient data: 10cba6f7 ...
+hyprctl getoption decoration:shadow:color             # gradient data: 10d08a52 ...
 ```
 
 **Before appending, check the config format:**
@@ -661,42 +692,42 @@ hyprctl getoption decoration:shadow:color             # gradient data: 10cba6f7 
 Back up `~/.config/starship.toml`, then write:
 
 ```toml
-# Cyberdeck two-line prompt: pastel pills matching the tmux bar and Omarchy "cyberdeck" theme.
+# Cyberdeck two-line prompt: pills matching the tmux bar and Omarchy "cyberdeck" theme.
 #   ╭─ user@host ( ~/dir ) ( branch ) status ⟨ 2.3s ⟩
 #   ╰─❯
 add_newline = true
 command_timeout = 200
-format = '[╭─](#565f89) $username$hostname$directory$git_branch$git_status$cmd_duration$line_break$character'
+format = '[╭─](#5c6170) $username$hostname$directory$git_branch$git_status$cmd_duration$line_break$character'
 
 [username]
 show_always = true
-format = '[$user](#8a91b4)'
+format = '[$user](#8f939f)'
 
 [hostname]
 ssh_only = false
-format = '[@$hostname](#8a91b4) '
+format = '[@$hostname](#8f939f) '
 
 [directory]
 truncation_length = 3
 truncation_symbol = "…/"
-format = '[](fg:#cba6f7)[ $path$read_only ](fg:#cba6f7 bold)[](fg:#cba6f7) '
+format = '[](fg:#d08a52)[ $path$read_only ](fg:#d08a52 bold)[](fg:#d08a52) '
 read_only = " 󰌾"
 
 [git_branch]
 symbol = " "
-format = '[](fg:#2a2f41)[$symbol$branch](fg:#a6e3a1 bg:#2a2f41)[](fg:#2a2f41) '
+format = '[](fg:#23263d)[$symbol$branch](fg:#9fb565 bg:#23263d)[](fg:#23263d) '
 
 [cmd_duration]
 min_time = 2000
-format = '[⟨ $duration ⟩](#ffc777) '
+format = '[⟨ $duration ⟩](#d8c07a) '
 
 [character]
-success_symbol = "[╰─❯](bold #cba6f7)"
-error_symbol = "[╰─✗](bold #ff9e9e)"
+success_symbol = "[╰─❯](bold #d08a52)"
+error_symbol = "[╰─✗](bold #d9705a)"
 
 [git_status]
 format     = '[$all_status]($style)'
-style      = "#ffc777"
+style      = "#d8c07a"
 ahead      = "⇡${count} "
 diverged   = "⇕⇡${ahead_count}⇣${behind_count} "
 behind     = "⇣${count} "
@@ -720,33 +751,34 @@ STARSHIP_SHELL= starship prompt --status 1 --cmd-duration 4300 </dev/null | sed 
 # expect a "⟨ 4s ⟩" timer and a "╰─✗" second line
 ```
 
-The prompt shows the folder in a hollow lavender outline pill, the git branch in a dark pill with mint text, git status in amber, a timer for commands over 2 seconds, and the arrow turns coral on errors.
+The prompt shows the folder in a hollow copper outline pill, the git branch in a dark pill with moss text, git status in amber, a timer for commands over 2 seconds, and the arrow turns ember red on errors.
 
 ## 8. Palette reference
 
+The colours come from the main wallpaper: night indigo and warm near-black for the base, copper from the light trails, teal from their fringe, moss and golden olive from the hillside, and the pale flower white for text.
+
 | Role | Hex |
 |---|---|
-| Background / dark | `#0d0e15` / `#07080c` |
-| Text | `#c8cde8` |
-| Dim text | `#565f89` |
-| Slate (inactive pills, selection) | `#2a2f41` |
-| Lavender (accent, session pill, prompt) | `#cba6f7` |
-| Hologram cyan (border gradient, theme cyan) | `#89ddff` |
-| Baby blue (focused tab, CPU) | `#a5d8ff` |
-| Pink (MEM, command deck title) | `#f5c2e7` |
-| Mint (clock, prefix-active) | `#b5ead7` |
-| Phosphor green (git branch, theme green) | `#a6e3a1` |
-| Coral (active pane line, errors) | `#ff9e9e` |
-| Peach / amber (last-window marker / git status, timer) | `#ffd6a5` / `#ffc777` |
+| Background / darker | `#0e0d12` / `#08070a` |
+| Lighter background / selection (night indigo) | `#1c1d2e` / `#26294a` |
+| Text (flower white) | `#dde2da` |
+| Dim text (steel) | `#5c6170` |
+| Inactive pills, git-branch pill | `#23263d` |
+| Copper (accent: session pill, outline pills, prompt, menus, messages, glow) | `#d08a52` |
+| Teal (focused tab, CPU, HOST, border gradient end) | `#6fb3b8` |
+| Golden olive (MEM, command deck title, KERNEL, git status, timer, last-window marker) | `#d8c07a` |
+| Moss (clock, UPTIME, prefix-active session pill, git branch) | `#9fb565` |
+| Ember red (active pane line, errors) | `#d9705a` |
+| Indigo / violet (theme blue / magenta) | `#8c97d6` / `#a99bd8` |
 
 ## 9. What the user should see
 
 - **tmux top row:**
-  - on the left, a lavender session pill that turns mint with a keyboard icon while the prefix (C-j) is held, followed by window tabs as pills (baby blue for the focused window, slate for the rest)
-  - on the right, pills for CPU (blue), MEM (pink) and the clock (mint)
-- **tmux second row:** `HOST · KERNEL · UPTIME`, centred inside thin lavender rounded brackets.
+  - on the left, a copper session pill that turns moss with a keyboard icon while the prefix (C-j) is held, followed by window tabs as pills (teal for the focused window, dark indigo for the rest)
+  - on the right, pills for CPU (teal), MEM (golden olive) and the clock (moss)
+- **tmux second row:** `HOST · KERNEL · UPTIME`, centred inside thin copper rounded brackets.
 - **tmux panes:**
-  - a heavy border on each pane with a top label such as `▷ AI AGENT :: claude`, `▷ EDITOR :: nvim` or `▷ TERMINAL :: bash`; the active pane is coral
+  - a heavy border on each pane with a top label such as `▷ AI AGENT :: claude`, `▷ EDITOR :: nvim` or `▷ TERMINAL :: bash`; the active pane is ember red
   - transparent backgrounds that show the blurred wallpaper through Ghostty
 - **tmux keys:**
   - `C-j Space` opens the "◢ COMMAND DECK ◣" menu
@@ -755,8 +787,8 @@ The prompt shows the folder in a hollow lavender outline pill, the git branch in
   - `C-j r` reloads the config
 - **Desktop:**
   - square window corners
-  - a slowly rotating lavender-to-cyan border and a barely visible lavender glow on the focused window
-  - the night-field wallpaper
+  - a slowly rotating copper-to-teal border and a barely visible copper glow on the focused window
+  - the Perplexity night-hillside photo as the wallpaper (`omarchy theme bg next` cycles to Nightfield and Grid)
   - a larger top bar (font size 14)
   - a lock screen with the sharp, unblurred wallpaper behind the password box
 
