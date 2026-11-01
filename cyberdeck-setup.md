@@ -594,6 +594,27 @@ size-horizontal = 28
 
 On Omarchy 4.0.6, `/usr/share/omarchy/shell/Commons/Style.qml` reads only `[font] base-size` and per-token font keys, plus `[bar] size-horizontal`, `size-vertical` and `scale-with-font`. Bar icon sizes scale with `base-size`, and keys like `icon-size` are ignored. The bar reloads this file automatically; otherwise run `omarchy restart shell`. Recheck `Style.qml` on the new install in case the keys have changed.
 
+### 5f. Lock screen with an unblurred wallpaper
+
+The built-in lock screen (`omarchy.lock`) already shows the current wallpaper, but it blurs it at full strength. The blur is fixed in the code, so the user chose to clone the plugin and turn the blur off. **Tell the user that the clone stops receiving Omarchy's lock-screen updates** (including security fixes), and confirm they still want it.
+
+```bash
+omarchy plugin clone omarchy.lock      # creates ~/.config/omarchy/plugins/<username>.lock and switches to it
+```
+
+In `~/.config/omarchy/plugins/<username>.lock/LockView.qml`, inside the `MultiEffect` that sits on top of the `wallpaper` Image, replace
+`blurEnabled: root.loadBackground && wallpaper.status === Image.Ready` with `blurEnabled: false`. Leave everything else alone.
+
+Then run `omarchy restart shell`. This removes the old built-in lock's IPC handler; before the restart, the journal warns that another handler is registered for target `lock`. Check:
+
+```bash
+omarchy plugin list | grep -i lock     # omarchy.lock disabled, <username>.lock enabled
+omarchy-shell lock preview             # shows the lock screen without locking; then:
+omarchy-shell lock hidePreview
+```
+
+To undo: `omarchy plugin remove <username>.lock` and `omarchy plugin enable omarchy.lock`, then `omarchy restart shell`.
+
 ## 6. Hyprland: border, glow, corners
 
 Back up `~/.config/hypr/looknfeel.lua`, then **append** this block at the end. Leave the commented examples above it alone.
@@ -737,6 +758,7 @@ The prompt shows the folder in a hollow lavender outline pill, the git branch in
   - a slowly rotating lavender-to-cyan border and a barely visible lavender glow on the focused window
   - the night-field wallpaper
   - a larger top bar (font size 14)
+  - a lock screen with the sharp, unblurred wallpaper behind the password box
 
 ## 10. Final check: Nerd Font glyphs survived
 
