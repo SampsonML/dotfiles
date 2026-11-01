@@ -646,6 +646,166 @@ omarchy-shell lock hidePreview
 
 To undo: `omarchy plugin remove <username>.lock` and `omarchy plugin enable omarchy.lock`, then `omarchy restart shell`.
 
+### 5g. Lock screen HUD clock and status line
+
+This adds two things to the cloned lock screen from 5f, both display-only; nothing touches the password field or authentication:
+- **Clock:** a large `HH:mm` above the password box, with `SUN 01 NOV 2026 · W44` under it (the week number is copper).
+- **Status line:** a terminal-style line under the box, on a dark backing so it stays readable over the bright flowers. It shows:
+  - `SYSTEM LOCKED // <HOSTNAME> ▮` while idle, with a blinking cursor and ` · N FAILED` after failed attempts
+  - `AUTHENTICATING… ▮` in copper while typing
+  - `VERIFYING…` while checking the password
+  - `ACCESS DENIED · ATTEMPT N` in red after a wrong password
+
+Make three edits to `~/.config/omarchy/plugins/<username>.lock/LockView.qml`:
+
+1. Add `import Quickshell.Io` after `import QtQuick.Effects`.
+2. Insert this block in the root `Item`, just before `signal submitPassword(string password)`:
+
+```qml
+  // --- Cyberdeck additions: HUD clock + terminal-style status line ---------
+  // Display-only; nothing here touches the password field or authentication.
+  property var now: new Date()
+  property bool cursorOn: true
+  property string hostName: "LOCALHOST"
+  readonly property string statusText: authenticatingPassword ? "VERIFYING…"
+    : errorState ? "ACCESS DENIED · ATTEMPT " + failedAttempts
+    : passwordInput.text.length > 0 ? "AUTHENTICATING…"
+    : "SYSTEM LOCKED // " + hostName + (failedAttempts > 0 ? " · " + failedAttempts + " FAILED" : "")
+
+  // ISO-8601 week number (Qt's date formats don't have one)
+  function isoWeek(d) {
+    var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+    var day = t.getUTCDay() || 7
+    t.setUTCDate(t.getUTCDate() + 4 - day)
+    var yearStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1))
+    return Math.ceil(((t - yearStart) / 86400000 + 1) / 7)
+  }
+
+  FileView {
+    id: hostFile
+    path: "/etc/hostname"
+    onLoaded: {
+      var h = hostFile.text().trim()
+      if (h.length > 0) root.hostName = h.toUpperCase()
+    }
+  }
+
+  Timer {
+    interval: 1000
+    running: root.visible
+    repeat: true
+    triggeredOnStart: true
+    onTriggered: root.now = new Date()
+  }
+
+  Timer {
+    interval: 530
+    running: root.visible
+    repeat: true
+    onTriggered: root.cursorOn = !root.cursorOn
+  }
+  // -------------------------------------------------------------------------
+```
+
+3. Insert this block inside the main `Rectangle`, right after the full-screen `MouseArea` and before `BorderSurface {` (the password field, `id: inputField`):
+
+```qml
+    // Cyberdeck: large HUD clock with date and ISO week, above the password field
+    Column {
+      id: hudClock
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.bottom: inputField.top
+      anchors.bottomMargin: 56
+      spacing: 4
+      layer.enabled: true
+      layer.effect: MultiEffect {
+        shadowEnabled: true
+        shadowColor: "#d0000000"
+        shadowBlur: 0.8
+        shadowVerticalOffset: 2
+        shadowHorizontalOffset: 0
+      }
+
+      Text {
+        anchors.horizontalCenter: parent.horizontalCenter
+        textFormat: Text.PlainText
+        text: Qt.formatDateTime(root.now, "HH:mm")
+        color: Commons.Color.lock.text
+        font.family: Style.font.family
+        font.pixelSize: Math.round(Style.font.display * 4)
+        font.weight: Font.Light
+        font.letterSpacing: 4
+      }
+
+      Row {
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 12
+
+        Text {
+          textFormat: Text.PlainText
+          text: Qt.formatDateTime(root.now, "ddd dd MMM yyyy").toUpperCase()
+          color: Commons.Color.lock.text
+          opacity: 0.85
+          font.family: Style.font.family
+          font.pixelSize: Style.font.heading
+          font.letterSpacing: 3
+        }
+        Text {
+          textFormat: Text.PlainText
+          text: "·"
+          color: Commons.Color.accent
+          font.family: Style.font.family
+          font.pixelSize: Style.font.heading
+        }
+        Text {
+          textFormat: Text.PlainText
+          text: "W" + root.isoWeek(root.now)
+          color: Commons.Color.accent
+          font.family: Style.font.family
+          font.pixelSize: Style.font.heading
+          font.letterSpacing: 3
+        }
+      }
+    }
+
+    // Cyberdeck: dark backing so the status line stays readable over bright wallpaper
+    Rectangle {
+      anchors.centerIn: statusLine
+      width: statusLine.implicitWidth + 28
+      height: statusLine.implicitHeight + 12
+      color: Commons.Color.lock.background
+      opacity: 0.75
+      radius: Style.cornerRadius
+    }
+
+    // Cyberdeck: terminal-style status line under the password field
+    Text {
+      id: statusLine
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.top: inputField.bottom
+      anchors.topMargin: 18
+      textFormat: Text.PlainText
+      text: root.statusText + ((root.errorState || root.authenticatingPassword) ? "" : (root.cursorOn ? " ▮" : "  "))
+      color: root.errorState ? Commons.Color.lock.textError
+        : (root.authenticatingPassword || passwordInput.text.length > 0) ? Commons.Color.accent
+        : Commons.Color.lock.text
+      opacity: (root.errorState || root.authenticatingPassword || passwordInput.text.length > 0) ? 1.0 : 0.8
+      font.family: Style.font.family
+      font.pixelSize: Style.font.subtitle
+      font.letterSpacing: 2.5
+      layer.enabled: true
+      layer.effect: MultiEffect {
+        shadowEnabled: true
+        shadowColor: "#d0000000"
+        shadowBlur: 0.7
+        shadowVerticalOffset: 1
+        shadowHorizontalOffset: 0
+      }
+    }
+```
+
+**Hot reload doesn't pick these up:** the shell's hot reload keeps a cached copy of `LockView.qml`, so run `omarchy restart shell` after editing. Check with `omarchy-shell lock preview`, then `omarchy-shell lock hidePreview`, and look for errors with `qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i lockview`. The preview disables input, so only the idle state shows there.
+
 ## 6. Hyprland: border, glow, corners
 
 Back up `~/.config/hypr/looknfeel.lua`, then **append** this block at the end. Leave the commented examples above it alone.
@@ -790,7 +950,7 @@ The colours come from the main wallpaper: night indigo and warm near-black for t
   - a slowly rotating copper-to-teal border and a barely visible copper glow on the focused window
   - the Perplexity night-hillside photo as the wallpaper (`omarchy theme bg next` cycles to Nightfield and Grid)
   - a larger top bar (font size 14)
-  - a lock screen with the sharp, unblurred wallpaper behind the password box
+  - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it
 
 ## 10. Final check: Nerd Font glyphs survived
 
