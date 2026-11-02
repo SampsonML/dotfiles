@@ -9,7 +9,7 @@ The look is a "modern hacker but professional" cyberdeck style:
 - **Omarchy theme "cyberdeck":** a custom colour theme. The main wallpaper is a long-exposure night photo of a flowering hillside, downloaded from the user's GitHub repo, with two generated backup wallpapers.
 - **Hyprland:** a rotating copper-to-teal border on the focused window, a faint glow and square corners.
 - **Prompt:** a two-line Starship prompt.
-- **Top bar:** a floating HUD frame with a copper outline, numbered workspace pills (copper for the active one), a science-beaker menu button and larger icons.
+- **Top bar:** a floating HUD frame with a copper outline, numbered workspace pills (copper for the active one), a science-beaker menu button, a ticking "mortality counter" (age in years to 7 decimals) and larger icons.
 
 Every file below is the exact content from the source machine.
 
@@ -30,7 +30,8 @@ Every file below is the exact content from the source machine.
 1. **Hostname:** what should the machine be called? The source machine is `mini-beast`. The name shows in the tmux status row and the prompt. Have the user run `hostnamectl set-hostname <name>` in their terminal; it goes through polkit.
 2. **Rotating border:** on a laptop this redraws continuously and costs a little battery. Ask whether to keep it (section 6).
 3. **Lock screen on battery:** section 5h keeps the screen on while locked when plugged in, and lets it turn off after 5 seconds on battery. Ask whether they want that, or the screen on even on battery.
-4. **Wallpaper repo URL:** section 5c downloads the main wallpaper (`dr-hero-bg.webp`) from the user's GitHub repo. If `<REPO-RAW-URL>` in section 5c is still a placeholder, ask the user for the link to the image in their repo. If the repo is private, ask them to run `gh auth login` first (section 5c explains how to download it).
+4. **Birth date for the mortality counter:** section 5j shows the user's age in the top bar. Ask for their birth date (`YYYY-MM-DD`), and the time of birth if they know it (`YYYY-MM-DDTHH:MM`); without a time it counts from midnight. It's stored only in `~/.config/omarchy/shell.json`.
+5. **Wallpaper repo URL:** section 5c downloads the main wallpaper (`dr-hero-bg.webp`) from the user's GitHub repo. If `<REPO-RAW-URL>` in section 5c is still a placeholder, ask the user for the link to the image in their repo. If the repo is private, ask them to run `gh auth login` first (section 5c explains how to download it).
 
 ## 2. Packages and fonts
 
@@ -1167,6 +1168,177 @@ Ask the user to click the beaker (left: menu, right: terminal) and a workspace p
 
 **To undo:** `omarchy bar use omarchy.bar`; in `shell.json` change `beaker-menu` back to `{"id":"omarchy.menu"}` and `<username>.workspaces` back to `omarchy.workspaces`; then `omarchy restart shell`.
 
+### 5j. Top bar: mortality counter
+
+A widget at the start of the right-hand group (before the tray) showing the user's age in years as a decimal that keeps ticking up: `MORTALITY 31.4159265`. It's a hollow copper pill (theme accent) like the workspace pills, with a copper `MORTALITY` label in small letter-spaced capitals and the number in the bar text colour, using tabular digits so it doesn't jitter. Hovering shows the birth date and the number of days alive.
+
+How it counts:
+- The whole number goes up exactly on each birthday, at the birth time; the fraction is how far the user is from the last birthday to the next one, so leap years are handled.
+- It counts real elapsed time, so across a daylight-saving change it differs by an hour from a naive wall-clock calculation. That's expected.
+- With 7 decimals the last digit changes about every 3 seconds (8 decimals: every 0.3 seconds). The timer runs every 100 ms only while the widget is visible.
+
+Create `~/.config/omarchy/bar/modules/mortality.qml`:
+
+```qml
+import QtQuick
+import qs.Commons
+import qs.Commons as Commons
+
+// Mortality counter: your age in years as a decimal that keeps ticking up,
+// e.g. "MORTALITY 34.49817235", inside a hollow copper pill.
+//
+// Settings come from this widget's entry in ~/.config/omarchy/shell.json:
+//   { "id": "mortality", "type": "qml", "birth": "1991-04-17T06:30:00", "decimals": 8 }
+// "birth" is local time (ISO 8601; the time part is optional). The whole
+// number goes up exactly on each birthday; the fraction is how far you are
+// from the last birthday to the next one.
+Item {
+  id: root
+
+  property var bar
+  property string moduleName
+  property var settings
+
+  readonly property string birthSetting: settings && settings.birth ? String(settings.birth) : ""
+  readonly property int decimals: settings && isFinite(Number(settings.decimals))
+    ? Math.max(0, Math.min(10, Math.floor(Number(settings.decimals)))) : 8
+  readonly property var birth: parseBirth(birthSetting)
+  property string ageText: "--"
+
+  readonly property color copper: Commons.Color.accent
+  readonly property color textColor: bar ? bar.barForeground : Commons.Color.foreground
+  readonly property real pillHeight: Math.round((bar ? bar.barSize : Style.bar.sizeHorizontal) * 0.6)
+  readonly property real padX: Style.space(9)
+  readonly property real gap: Style.space(6)
+
+  implicitWidth: pill.width + Style.space(4)
+  implicitHeight: bar ? bar.barSize : Style.bar.sizeHorizontal
+
+  // "YYYY-MM-DD" or "YYYY-MM-DDTHH:MM[:SS]" (a space works instead of T),
+  // read as local time. Returns null if it can't be parsed.
+  function parseBirth(value) {
+    var m = String(value || "").trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/)
+    if (!m) return null
+    var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]),
+                     Number(m[4] || 0), Number(m[5] || 0), Number(m[6] || 0))
+    return isNaN(d.getTime()) ? null : d
+  }
+
+  // The birthday in a given year, at the birth time of day.
+  function birthdayIn(year) {
+    return new Date(year, birth.getMonth(), birth.getDate(),
+                    birth.getHours(), birth.getMinutes(), birth.getSeconds())
+  }
+
+  function ageYears(now) {
+    var years = now.getFullYear() - birth.getFullYear()
+    var last = birthdayIn(birth.getFullYear() + years)
+    if (last > now) {
+      years -= 1
+      last = birthdayIn(birth.getFullYear() + years)
+    }
+    var next = birthdayIn(birth.getFullYear() + years + 1)
+    return years + (now - last) / (next - last)
+  }
+
+  function refresh() {
+    if (!birth) {
+      ageText = "set birth date"
+      return
+    }
+    var now = new Date()
+    if (now < birth) {
+      ageText = "not born yet"
+      return
+    }
+    ageText = ageYears(now).toFixed(decimals)
+  }
+
+  function tooltipText() {
+    if (!birth) return "Add \"birth\": \"YYYY-MM-DDTHH:MM\" to this widget in ~/.config/omarchy/shell.json"
+    var days = Math.floor((new Date() - birth) / 86400000)
+    return "Born " + Qt.formatDateTime(birth, "d MMMM yyyy, HH:mm") + " · " + days.toLocaleString(Qt.locale("en_US"), "f", 0) + " days"
+  }
+
+  onBirthChanged: refresh()
+  onDecimalsChanged: refresh()
+
+  // With 8 decimals the last digit moves about every 0.3 s.
+  Timer {
+    interval: 100
+    running: root.visible && root.birth !== null
+    repeat: true
+    triggeredOnStart: true
+    onTriggered: root.refresh()
+  }
+
+  Rectangle {
+    id: pill
+    anchors.centerIn: parent
+    width: row.implicitWidth + root.padX * 2
+    height: root.pillHeight
+    radius: height / 2
+    color: "transparent"
+    border.width: 1
+    border.color: root.copper
+
+    Row {
+      id: row
+      anchors.centerIn: parent
+      spacing: root.gap
+
+      Text {
+        anchors.verticalCenter: parent.verticalCenter
+        text: "MORTALITY"
+        color: root.copper
+        font.family: bar ? bar.fontFamily : Style.font.family
+        font.pixelSize: Style.font.caption
+        font.letterSpacing: 1.5
+        renderType: Text.NativeRendering
+      }
+
+      Text {
+        anchors.verticalCenter: parent.verticalCenter
+        text: root.ageText
+        color: root.textColor
+        font.family: bar ? bar.fontFamily : Style.font.family
+        font.pixelSize: Style.font.body
+        font.features: { "tnum": 1 }
+        renderType: Text.NativeRendering
+      }
+    }
+  }
+
+  MouseArea {
+    anchors.fill: parent
+    hoverEnabled: true
+    acceptedButtons: Qt.NoButton
+    onEntered: if (root.bar) root.bar.showTooltip(root, root.tooltipText())
+    onExited: if (root.bar) root.bar.hideTooltip(root)
+  }
+}
+```
+
+**Use `Commons.Color`, not `Color`:** in a custom module loaded from `~/.config/omarchy/bar/modules/`, a bare `Color.accent` from `import qs.Commons` resolves to `undefined` (the journal shows `Unable to assign [undefined] to QColor` and the pill draws black). The file above imports `qs.Commons as Commons` and uses `Commons.Color.accent`, which works.
+
+Add it to the start of the right-hand section, with the birth date from section 1 (replace `<BIRTH-DATE>`, e.g. `1990-01-31` or `1990-01-31T06:30`):
+
+```bash
+cd ~/.config/omarchy
+cp shell.json shell.json.bak.$(date +%s)
+jq '.bar.layout.right |= ([{"id":"mortality","type":"qml","birth":"<BIRTH-DATE>","decimals":7}] + map(select(.id != "mortality")))' shell.json > shell.json.tmp && mv shell.json.tmp shell.json
+jq -c '.bar.layout.right[0]' shell.json   # {"id":"mortality","type":"qml","birth":"...","decimals":7}
+```
+
+Settings changes in `shell.json` (birth date, `decimals`) apply straight away. Changes to `mortality.qml` itself need `omarchy restart shell` (cached code, as in 5i). Without a valid `birth` the pill shows `set birth date`.
+
+Check:
+- **Screenshot:** `grim -g "1860,0 700x50" /tmp/mortality.png` (adjust the x offset to the screen's logical width minus 700). The pill and label should be copper, not black.
+- **Value:** compare with `python3 -c "from datetime import datetime as D; b=D(1990,1,31); n=D.now(); y=n.year-b.year-((n.month,n.day)<(b.month,b.day)); l=b.replace(year=b.year+y); x=b.replace(year=b.year+y+1); print(y+(n-l)/(x-l))"` (put in the real date). It should match to about 4 decimals, or within 0.000114 if a daylight-saving change happened since the last birthday.
+- **Log:** `qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i mortality` shows no errors.
+
+To remove it: delete the `mortality` entry from `bar.layout.right` in `shell.json`.
+
 ## 6. Hyprland: border, glow, corners
 
 Back up `~/.config/hypr/looknfeel.lua`, then **append** this block at the end. Leave the commented examples above it alone.
@@ -1310,7 +1482,7 @@ The colours come from the main wallpaper: night indigo and warm near-black for t
   - square window corners
   - a slowly rotating copper-to-teal border and a barely visible copper glow on the focused window
   - the Perplexity night-hillside photo as the wallpaper (`omarchy theme bg next` cycles to Nightfield and Grid)
-  - a top bar floating as a HUD frame with an even copper outline and square corners, a science-beaker menu button at the top left, workspaces as numbered pills (the active one filled copper, the others hollow) and larger icons
+  - a top bar floating as a HUD frame with an even copper outline and square corners, a science-beaker menu button at the top left, workspaces as numbered pills (the active one filled copper, the others hollow), a hollow copper `MORTALITY 31.4159265` pill on the right whose last digit ticks every few seconds, and larger icons
   - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it; while plugged in, the screen stays on the whole time it is locked
 
 ## 10. Final check: Nerd Font glyphs survived
