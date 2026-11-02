@@ -9,7 +9,7 @@ The look is a "modern hacker but professional" cyberdeck style:
 - **Omarchy theme "cyberdeck":** a custom colour theme. The main wallpaper is a long-exposure night photo of a flowering hillside, downloaded from the user's GitHub repo, with two generated backup wallpapers.
 - **Hyprland:** a rotating copper-to-teal border on the focused window, a faint glow and square corners.
 - **Prompt:** a two-line Starship prompt.
-- **Top bar:** a larger bar font.
+- **Top bar:** a floating HUD frame with a copper outline, numbered workspace pills (copper for the active one), a science-beaker menu button and larger icons.
 
 Every file below is the exact content from the source machine.
 
@@ -602,28 +602,50 @@ tmux show -g window-style      # if a tmux server is running: should print 'wind
 hyprctl getoption general:col.active_border   # gradient data: eed08a52 ee6fb3b8 45deg
 ```
 
-### 5e. Top bar size
+### 5e. Top bar icon size
 
-`~/.config/omarchy/shell.toml` is the user override, merged over the theme's `shell.toml`. Use:
+`~/.config/omarchy/shell.toml` is the user override, merged over the theme's `shell.toml`. The bar has no icon-size setting: icon size, icon spacing and bar height all scale with `[font] base-size` (base-size / 12), which also scales every text size and the spacing in menus and notifications. To enlarge only the icons, raise `base-size`, pin each text token back to its base-size 14 value, and shrink `[spacing] scale` by the same ratio (14 / 18). Use:
 
 ```toml
 [font]
-# Root size for the shell: bar text uses this size, and bar icons, icon spacing and
-# bar height all scale with it (base-size / 12). It also scales menus and notifications.
-base-size = 14
+# Bar icons, icon spacing and bar height scale with base-size / 12; there is no
+# separate icon-size setting. base-size is set high (18) to enlarge the bar icons
+# (~20px, up from ~15px at base-size 14), and every text token below is pinned to
+# its base-size 14 value so text in the bar, menus and notifications stays the
+# same size as before.
+base-size = 18
+caption = 12
+body-small = 13
+body = 14
+subtitle = 15
+title = 16
+heading = 19
+display = 28
+display-large = 33
+icon-large = 21
+
+[spacing]
+# Spacing grows with base-size too; 14/18 keeps panels, menus and notifications
+# at their base-size 14 dimensions.
+scale = 0.7778
 
 [bar]
-# Bar height at base-size 12; scaled with base-size (28 -> ~33px at base-size 14).
-size-horizontal = 28
+# Bar height at base-size 12; scaled with base-size (24 -> 36px at base-size 18,
+# up from ~33px) so the larger icons have room.
+size-horizontal = 24
 
 # These were ignored by the shell (it only reads size-horizontal / size-vertical
-# under [bar]); icon sizes now come from base-size above.
+# under [bar]); icon sizes come from base-size above.
 # icon-size = 18
 # icon-canvas = 20
 # icon-slot = 32
 ```
 
-On Omarchy 4.0.6, `/usr/share/omarchy/shell/Commons/Style.qml` reads only `[font] base-size` and per-token font keys, plus `[bar] size-horizontal`, `size-vertical` and `scale-with-font`. Bar icon sizes scale with `base-size`, and keys like `icon-size` are ignored. The bar reloads this file automatically; otherwise run `omarchy restart shell`. Recheck `Style.qml` on the new install in case the keys have changed.
+On Omarchy 4.0.6, `/usr/share/omarchy/shell/Commons/Style.qml` reads `[font] base-size` and per-token font keys (`caption`, `body-small`, `body`, `subtitle`, `title`, `heading`, `display`, `display-large`, `icon-small`, `icon`, `icon-large`), `[spacing] scale` and `scale-with-font`, and `[bar] size-horizontal`, `size-vertical` and `scale-with-font`. Keys like `icon-size` are ignored. Recheck `Style.qml` on the new install in case the keys or the default token multipliers have changed; the pinned values above are `round(14 × multiplier)`.
+
+The bar reloads this file automatically. Check: `hyprctl layers -j | jq -c '.[].levels[][] | select(.namespace=="omarchy-bar") | {w,h}'` gives `h` 36 before 5h, and 41 after it. Bar icons draw at about 20 px (about 15 px at base-size 14), and menu and notification text is unchanged.
+
+**Tell the user:** the monitor panel's text-size control and `omarchy display text size` rewrite `base-size`, which changes the icon size again and undoes the pinning ratio.
 
 ### 5f. Lock screen with an unblurred wallpaper
 
@@ -806,6 +828,288 @@ Make three edits to `~/.config/omarchy/plugins/<username>.lock/LockView.qml`:
 
 **Hot reload doesn't pick these up:** the shell's hot reload keeps a cached copy of `LockView.qml`, so run `omarchy restart shell` after editing. Check with `omarchy-shell lock preview`, then `omarchy-shell lock hidePreview`, and look for errors with `qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i lockview`. The preview disables input, so only the idle state shows there.
 
+### 5h. Top bar: cyberdeck HUD frame, workspace pills and beaker button
+
+The user chose this design through a series of questions:
+- **Frame:** the horizontal bar floats as a HUD frame. It sits half a window gap below the screen edge and a full window gap in from each side, so it lines up with the tiled windows below. Inside is a translucent dark fill (75%); the outline is copper at 0.55 opacity, even all the way around, with square corners. There are no dividers between the left, centre and right groups, and the frame is static (no hover or alert effects).
+- **Workspaces:** numbered pills without leading zeros (workspace 10 shows `0`). The focused one is filled with the theme accent (copper) with dark text; the others are hollow, outlined in light grey when they have windows and dim grey when empty.
+- **Menu button:** the Omarchy logo at the top left is replaced by a science beaker (Octicons "beaker", U+F499) in the normal bar text colour, at the same size as the other bar icons.
+- **Unchanged:** the clock (`Sunday 19:40`) and all the other widgets.
+
+This needs copies of two built-in plugins, `omarchy.bar` and `omarchy.workspaces`. **Tell the user that the copies stop receiving Omarchy's updates to the bar and workspaces widget**, and confirm they still want them. The menu button is a separate custom widget, so the Omarchy menu itself stays built-in and keeps updating.
+
+```bash
+cp ~/.config/omarchy/shell.json ~/.config/omarchy/shell.json.bak.$(date +%s)
+omarchy plugin clone omarchy.bar          # creates ~/.config/omarchy/plugins/<username>.bar and switches to it
+omarchy plugin clone omarchy.workspaces   # creates ~/.config/omarchy/plugins/<username>.workspaces and switches to it
+```
+
+**1. The frame.** Make four edits to `~/.config/omarchy/plugins/<username>.bar/Bar.qml`:
+
+1. Add `import QtQuick.Shapes` after `import QtQuick.Layouts`.
+2. Insert this block right after the line `readonly property int barSize: vertical ? Style.bar.sizeVertical : Style.bar.sizeHorizontal` (at the root level, around line 570):
+
+```qml
+  // --- Cyberdeck HUD frame (<username>) ---
+  // Horizontal bars float as a HUD frame: a translucent dark fill inside an
+  // even copper outline with square corners. hudNotch > 0 cuts the corners at
+  // 45° and hudCornerAccents adds bright copper corner brackets. Vertical
+  // bars keep the stock look. barSize stays the content height (widgets size
+  // themselves from it); the window adds the edge gap on top of that.
+  readonly property bool hudEnabled: !vertical
+  // Gap between screen edge and frame: half the Hyprland window gap, as
+  // Omarchy uses for panels. Sides use the full gap so the frame lines up
+  // with tiled windows below it.
+  readonly property int hudEdgeGap: hudEnabled ? Style.gapsOut : 0
+  readonly property int hudSideGap: hudEnabled ? Style.gapsOut * 2 : 0
+  readonly property int hudOuterSize: barSize + hudEdgeGap
+  // Corner cut size; 0 gives square corners (the accents become L-brackets).
+  readonly property real hudNotch: 0
+  readonly property real hudAccentLength: Math.round(barSize * 0.38)
+  readonly property real hudFillAlpha: 0.75
+  readonly property color hudCopper: "#d08a52"
+  readonly property real hudOutlineAlpha: 0.55
+  readonly property color hudOutline: Qt.rgba(hudCopper.r, hudCopper.g, hudCopper.b, hudOutlineAlpha)
+  // Bright copper brackets on each corner. Off: the outline is one even
+  // copper all the way round.
+  readonly property bool hudCornerAccents: false
+  readonly property color hudFill: Qt.rgba(background.r, background.g, background.b, transparent ? 0 : hudFillAlpha)
+```
+
+3. In `component BarPanel: PanelWindow`, inside `margins { … }`, change `-root.barSize` to `-root.hudOuterSize` on the `top:` and `bottom:` lines only (left and right stay `-root.barSize`).
+4. In the same component, replace these lines:
+
+```qml
+    implicitHeight: root.vertical ? 0 : root.barSize
+    color: root.transparent ? "transparent" : root.background
+    surfaceFormat.opaque: false
+    WlrLayershell.namespace: "omarchy-bar"
+    WlrLayershell.layer: WlrLayer.Top
+
+    Loader {
+      anchors.fill: parent
+```
+
+with:
+
+```qml
+    implicitHeight: root.vertical ? 0 : root.hudOuterSize
+    color: root.hudEnabled || root.transparent ? "transparent" : root.background
+    surfaceFormat.opaque: false
+    WlrLayershell.namespace: "omarchy-bar"
+    WlrLayershell.layer: WlrLayer.Top
+    // Only the frame takes input; the gaps around it click through.
+    mask: Region { item: hudFrame }
+
+    // The HUD frame. In vertical mode it fills the window and draws nothing.
+    Item {
+      id: hudFrame
+      x: root.hudSideGap
+      y: root.position === "bottom" ? 0 : root.hudEdgeGap
+      width: parent.width - root.hudSideGap * 2
+      height: root.vertical ? parent.height : root.barSize
+
+      Shape {
+        id: hudShape
+        anchors.fill: parent
+        visible: root.hudEnabled
+        preferredRendererType: Shape.CurveRenderer
+
+        readonly property real w: width
+        readonly property real h: height
+        readonly property real n: root.hudNotch
+        readonly property real a: root.hudAccentLength
+        // Inset half a pixel so 1px strokes land on whole pixels.
+        readonly property real o: 0.5
+
+        // Fill and dim outline: a rectangle, corners cut at 45° when hudNotch > 0.
+        ShapePath {
+          fillColor: root.hudFill
+          strokeColor: root.hudOutline
+          strokeWidth: 1
+          joinStyle: ShapePath.MiterJoin
+          startX: hudShape.n; startY: hudShape.o
+          PathLine { x: hudShape.w - hudShape.n; y: hudShape.o }
+          PathLine { x: hudShape.w - hudShape.o; y: hudShape.n }
+          PathLine { x: hudShape.w - hudShape.o; y: hudShape.h - hudShape.n }
+          PathLine { x: hudShape.w - hudShape.n; y: hudShape.h - hudShape.o }
+          PathLine { x: hudShape.n; y: hudShape.h - hudShape.o }
+          PathLine { x: hudShape.o; y: hudShape.h - hudShape.n }
+          PathLine { x: hudShape.o; y: hudShape.n }
+          PathLine { x: hudShape.n; y: hudShape.o }
+        }
+
+        // Bright copper accents tracing each corner.
+        ShapePath {
+          fillColor: "transparent"
+          strokeColor: root.hudCornerAccents ? root.hudCopper : "transparent"
+          strokeWidth: 1.5
+          joinStyle: ShapePath.MiterJoin
+          capStyle: ShapePath.FlatCap
+          // top-left
+          startX: hudShape.n + hudShape.a; startY: hudShape.o
+          PathLine { x: hudShape.n; y: hudShape.o }
+          PathLine { x: hudShape.o; y: hudShape.n }
+          PathLine { x: hudShape.o; y: Math.min(hudShape.h / 2, hudShape.n + hudShape.a * 0.5) }
+          // top-right
+          PathMove { x: hudShape.w - hudShape.n - hudShape.a; y: hudShape.o }
+          PathLine { x: hudShape.w - hudShape.n; y: hudShape.o }
+          PathLine { x: hudShape.w - hudShape.o; y: hudShape.n }
+          PathLine { x: hudShape.w - hudShape.o; y: Math.min(hudShape.h / 2, hudShape.n + hudShape.a * 0.5) }
+          // bottom-right
+          PathMove { x: hudShape.w - hudShape.n - hudShape.a; y: hudShape.h - hudShape.o }
+          PathLine { x: hudShape.w - hudShape.n; y: hudShape.h - hudShape.o }
+          PathLine { x: hudShape.w - hudShape.o; y: hudShape.h - hudShape.n }
+          PathLine { x: hudShape.w - hudShape.o; y: Math.max(hudShape.h / 2, hudShape.h - hudShape.n - hudShape.a * 0.5) }
+          // bottom-left
+          PathMove { x: hudShape.n + hudShape.a; y: hudShape.h - hudShape.o }
+          PathLine { x: hudShape.n; y: hudShape.h - hudShape.o }
+          PathLine { x: hudShape.o; y: hudShape.h - hudShape.n }
+          PathLine { x: hudShape.o; y: Math.max(hudShape.h / 2, hudShape.h - hudShape.n - hudShape.a * 0.5) }
+        }
+      }
+    }
+
+    Loader {
+      // Content sits inside the frame, pulled in past the notched corners.
+      x: hudFrame.x + (root.hudEnabled ? root.hudNotch * 0.5 : 0)
+      y: hudFrame.y
+      width: hudFrame.width - (root.hudEnabled ? root.hudNotch : 0)
+      height: hudFrame.height
+```
+
+Keep the rest of the `Loader` (its `sourceComponent` line and `HoverHandler`) as it is.
+
+`barSize` stays the content height, because every widget sizes itself from it; the window adds the edge gap on top. The bar popups (audio, network and so on) position themselves from the bar window's real height, so they clear the frame. The input mask makes the gaps around the frame click-through.
+
+**2. The workspace pills.** Make three edits to `~/.config/omarchy/plugins/<username>.workspaces/Workspaces.qml`:
+
+1. Insert this block right after the line `readonly property real trailingGap: root.vertical ? 0 : Style.spaceReal(1.5)`:
+
+```qml
+  // --- Cyberdeck pills (<username>) ---
+  // Every workspace is a rounded pill showing its number, like the tmux window
+  // tabs. The focused one is filled with the theme accent (copper #d08a52 in
+  // cyberdeck); the rest are hollow, outlined in light grey when they have
+  // windows and dim grey when empty.
+  readonly property color pillFocused: Color.accent
+  readonly property color pillFocusedText: "#0e0d12"
+  readonly property color pillOccupiedBorder: "#9fa39f"
+  readonly property color pillOccupiedText: "#dde2da"
+  readonly property color pillEmptyBorder: "#5c6170"
+  readonly property color pillEmptyText: "#5c6170"
+  readonly property real pillHeight: Math.round(root.barSize * 0.6)
+  readonly property real pillWidth: Math.round(pillHeight * 1.35)
+```
+
+2. In the `GridLayout`, change `columnSpacing: root.vertical ? 0 : Style.space(1)` to `columnSpacing: root.vertical ? 0 : Style.space(4)`.
+3. In the `WidgetButton` inside the `Repeater`, replace everything from `bar: root.bar` to the `onPressed` line (the `bar`, `text`, `opacity`, `horizontalMargin`, `verticalPadding`, `fixedWidth`, `fixedHeight` and `onPressed` lines) with:
+
+```qml
+        id: wsButton
+        bar: root.bar
+        text: modelData === 10 ? "0" : String(modelData)
+        foreground: focused ? root.pillFocusedText : (occupied ? root.pillOccupiedText : root.pillEmptyText)
+        horizontalMargin: 6
+        verticalPadding: 6
+        fixedWidth: root.vertical ? root.barSize : root.pillWidth
+        fixedHeight: root.vertical ? root.pillHeight + Style.space(2) : root.barSize
+        onPressed: function() { root.focusWorkspace(modelData) }
+
+        Rectangle {
+          z: -1
+          anchors.centerIn: parent
+          width: root.pillWidth
+          height: root.pillHeight
+          radius: height / 2
+          color: wsButton.focused ? root.pillFocused : "transparent"
+          border.width: wsButton.focused ? 0 : 1
+          border.color: wsButton.occupied ? root.pillOccupiedBorder : root.pillEmptyBorder
+
+          Behavior on color { ColorAnimation { duration: 140 } }
+        }
+```
+
+This drops the stock focused-workspace glyph (U+F14FB) and the 50% opacity on empty workspaces.
+
+**3. The beaker menu button.** Create `~/.config/omarchy/bar/modules/beaker-menu.qml`:
+
+```qml
+import QtQuick
+import qs.Commons
+import qs.Ui
+
+// Omarchy menu button with a science beaker icon instead of the Omarchy logo.
+// Behaves like the built-in omarchy.menu bar widget: left click opens the
+// Omarchy menu, right click opens a terminal. The menu itself is still the
+// built-in omarchy.menu, so it keeps getting Omarchy updates.
+Item {
+  id: root
+
+  property var bar
+  property string moduleName
+  property var settings
+
+  implicitWidth: button.implicitWidth
+  implicitHeight: button.implicitHeight
+
+  WidgetButton {
+    id: button
+    anchors.fill: parent
+    bar: root.bar
+    // Octicons "beaker" (nf-oct-beaker) from the Nerd Font.
+    text: "\uf499"
+    fontFamily: "Iosevka Nerd Font Propo"
+    // Same size as the other bar icons (scales with [font] base-size).
+    fontSize: Style.bar.iconFont
+    horizontalMargin: 7.5
+    onPressed: function(mouseButton) {
+      if (!root.bar) return
+      if (mouseButton === Qt.RightButton) root.bar.run("xdg-terminal-exec")
+      else root.bar.run("omarchy-shell shell toggle omarchy.menu '{\"menu\":\"root\"}'")
+    }
+  }
+}
+```
+
+The icon is written as the escape `\uf499`, so there's no raw glyph to lose when copying. Then swap it in for the built-in menu button:
+
+```bash
+cd ~/.config/omarchy
+jq '.bar.layout.left |= map(if .id == "omarchy.menu" then {"id":"beaker-menu","type":"qml"} else . end)' shell.json > shell.json.tmp && mv shell.json.tmp shell.json
+jq -c '.bar.layout.left' shell.json     # [{"id":"beaker-menu","type":"qml"},{"id":"<username>.workspaces"}]
+```
+
+**4. Apply and check.** Hot reload doesn't pick up QML edits to the copied plugins (the shell keeps a cached copy), so run `omarchy restart shell` after every edit. Then:
+
+```bash
+omarchy plugin list | grep -E 'bar|workspaces'   # <username>.bar and <username>.workspaces enabled
+hyprctl layers -j | jq -c '.[].levels[][] | select(.namespace=="omarchy-bar") | {w,h}'   # h = 41 (36 content + 5 gap)
+qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -iE 'Bar.qml|Workspaces.qml|beaker'   # no errors
+omarchy-shell shell toggle omarchy.menu '{"menu":"root"}'   # the Omarchy menu opens; run it again to close it
+grim -g "0,0 600x50" /tmp/bar.png   # look at it: copper frame, beaker, pills
+```
+
+Ask the user to click the beaker (left: menu, right: terminal) and a workspace pill, and to open one bar popup.
+
+**Settings to tune later** (run `omarchy restart shell` after changing any):
+
+| Setting | File | Value |
+|---|---|---|
+| `hudOutlineAlpha` | `Bar.qml` | `0.55`: outline opacity (1 = solid copper) |
+| `hudFillAlpha` | `Bar.qml` | `0.75`: background opacity inside the frame |
+| `hudNotch` | `Bar.qml` | `0`: square corners; above 0 cuts the corners at 45° by that many pixels |
+| `hudCornerAccents` | `Bar.qml` | `false`: `true` adds bright copper brackets on each corner |
+| `hudEdgeGap` / `hudSideGap` | `Bar.qml` | `Style.gapsOut` / `Style.gapsOut * 2`: 5 px and 10 px with Hyprland `gaps_out = 10` |
+| `pillFocused` | `Workspaces.qml` | `Color.accent`: follows the theme accent |
+| `pillOccupiedBorder` / `pillEmptyBorder` | `Workspaces.qml` | `#9fa39f` / `#5c6170` |
+
+**Known limits:**
+- **Notifications:** notification cards are placed at the bar's content height plus half a gap and don't know about the frame's edge gap, so they sit right against the frame's bottom edge. Fixing that would need a copy of `omarchy.notifications`.
+- **Side bars:** if the bar is moved to the left or right edge, the frame turns off and the bar looks stock.
+
+**To undo:** `omarchy bar use omarchy.bar`; in `shell.json` change `beaker-menu` back to `{"id":"omarchy.menu"}` and `<username>.workspaces` back to `omarchy.workspaces`; then `omarchy restart shell`.
+
 ## 6. Hyprland: border, glow, corners
 
 Back up `~/.config/hypr/looknfeel.lua`, then **append** this block at the end. Leave the commented examples above it alone.
@@ -924,7 +1228,7 @@ The colours come from the main wallpaper: night indigo and warm near-black for t
 | Text (flower white) | `#dde2da` |
 | Dim text (steel) | `#5c6170` |
 | Inactive pills, git-branch pill | `#23263d` |
-| Copper (accent: session pill, outline pills, prompt, menus, messages, glow) | `#d08a52` |
+| Copper (accent: session pill, outline pills, prompt, menus, messages, glow, top-bar frame, active workspace pill) | `#d08a52` |
 | Teal (focused tab, CPU, HOST, border gradient end) | `#6fb3b8` |
 | Golden olive (MEM, command deck title, KERNEL, git status, timer, last-window marker) | `#d8c07a` |
 | Moss (clock, UPTIME, prefix-active session pill, git branch) | `#9fb565` |
@@ -949,7 +1253,7 @@ The colours come from the main wallpaper: night indigo and warm near-black for t
   - square window corners
   - a slowly rotating copper-to-teal border and a barely visible copper glow on the focused window
   - the Perplexity night-hillside photo as the wallpaper (`omarchy theme bg next` cycles to Nightfield and Grid)
-  - a larger top bar (font size 14)
+  - a top bar floating as a HUD frame with an even copper outline and square corners, a science-beaker menu button at the top left, workspaces as numbered pills (the active one filled copper, the others hollow) and larger icons
   - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it
 
 ## 10. Final check: Nerd Font glyphs survived
