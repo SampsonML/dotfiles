@@ -643,7 +643,7 @@ size-horizontal = 24
 
 On Omarchy 4.0.6, `/usr/share/omarchy/shell/Commons/Style.qml` reads `[font] base-size` and per-token font keys (`caption`, `body-small`, `body`, `subtitle`, `title`, `heading`, `display`, `display-large`, `icon-small`, `icon`, `icon-large`), `[spacing] scale` and `scale-with-font`, and `[bar] size-horizontal`, `size-vertical` and `scale-with-font`. Keys like `icon-size` are ignored. Recheck `Style.qml` on the new install in case the keys or the default token multipliers have changed; the pinned values above are `round(14 × multiplier)`.
 
-The bar reloads this file automatically. Check: `hyprctl layers -j | jq -c '.[].levels[][] | select(.namespace=="omarchy-bar") | {w,h}'` gives `h` 36 before 5h, and 41 after it. Bar icons draw at about 20 px (about 15 px at base-size 14), and menu and notification text is unchanged.
+The bar reloads this file automatically. Check: `hyprctl layers -j | jq -c '.[].levels[][] | select(.namespace=="omarchy-bar") | {w,h}'` gives `h` 36 before 5i, and 41 after it. Bar icons draw at about 20 px (about 15 px at base-size 14), and menu and notification text is unchanged.
 
 **Tell the user:** the monitor panel's text-size control and `omarchy display text size` rewrite `base-size`, which changes the icon size again and undoes the pinning ratio.
 
@@ -828,7 +828,55 @@ Make three edits to `~/.config/omarchy/plugins/<username>.lock/LockView.qml`:
 
 **Hot reload doesn't pick these up:** the shell's hot reload keeps a cached copy of `LockView.qml`, so run `omarchy restart shell` after editing. Check with `omarchy-shell lock preview`, then `omarchy-shell lock hidePreview`, and look for errors with `qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i lockview`. The preview disables input, so only the idle state shows there.
 
-### 5h. Top bar: cyberdeck HUD frame, workspace pills and beaker button
+### 5h. Lock screen keeps the display on
+
+The built-in lock screen turns the display and keyboard backlight off after 5 seconds without input (`idleBlankTimer` in the lock's `Service.qml` runs `omarchy-brightness-keyboard off; omarchy-brightness-display off`). The user wants the screen to stay on the whole time it's locked. Nothing else turns the display off: the idle settings in `shell.json` (screensaver at 150 s, lock at 300 s) and the Hyprland config have no screen-off timer.
+
+This edits the cloned lock from 5f. In `~/.config/omarchy/plugins/<username>.lock/Service.qml`, back the file up, then replace
+
+```qml
+  function armBlankTimer() {
+    idleBlankTimer.armedAt = Date.now()
+    idleBlankTimer.restart()
+  }
+```
+
+with:
+
+```qml
+  // Cyberdeck: keep the display on while locked. The built-in lock turns the
+  // display (and keyboard backlight) off after 5 s without input; set this to
+  // true to bring that back.
+  readonly property bool blankDisplayWhenLocked: false
+
+  function armBlankTimer() {
+    if (!blankDisplayWhenLocked) {
+      idleBlankTimer.stop()
+      return
+    }
+    idleBlankTimer.armedAt = Date.now()
+    idleBlankTimer.restart()
+  }
+```
+
+Every path that would blank the display goes through `armBlankTimer()` (locking, waking, finishing a password check), so this one change covers them all; unlocking still runs `omarchy-system-wake` as before.
+
+Then run `omarchy restart shell` (hot reload doesn't pick up edits to the cloned lock). Check:
+
+```bash
+omarchy plugin list | grep -i lock     # <username>.lock enabled
+qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i 'lock.*Service.qml'   # no errors
+```
+
+`omarchy-shell lock preview` doesn't run the blank timer, so ask the user to lock for real (`omarchy system lock` or Super + Ctrl + L), leave it alone for more than 5 seconds, and confirm the screen stays on.
+
+**Tell the user:**
+- **Laptop battery:** on the ThinkPad this keeps the panel lit for as long as it's locked, which costs battery. Ask whether they want it on the laptop, or only when plugged in (that would need an extra check on AC power in `armBlankTimer()`).
+- **OLED burn-in:** if the display is OLED, a lock screen left on for hours can burn in, because the clock and status line don't move.
+
+To undo: set `blankDisplayWhenLocked` to `true` and run `omarchy restart shell`.
+
+### 5i. Top bar: cyberdeck HUD frame, workspace pills and beaker button
 
 The user chose this design through a series of questions:
 - **Frame:** the horizontal bar floats as a HUD frame. It sits half a window gap below the screen edge and a full window gap in from each side, so it lines up with the tiled windows below. Inside is a translucent dark fill (75%); the outline is copper at 0.55 opacity, even all the way around, with square corners. There are no dividers between the left, centre and right groups, and the frame is static (no hover or alert effects).
@@ -1254,7 +1302,7 @@ The colours come from the main wallpaper: night indigo and warm near-black for t
   - a slowly rotating copper-to-teal border and a barely visible copper glow on the focused window
   - the Perplexity night-hillside photo as the wallpaper (`omarchy theme bg next` cycles to Nightfield and Grid)
   - a top bar floating as a HUD frame with an even copper outline and square corners, a science-beaker menu button at the top left, workspaces as numbered pills (the active one filled copper, the others hollow) and larger icons
-  - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it
+  - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it; the screen stays on the whole time it is locked
 
 ## 10. Final check: Nerd Font glyphs survived
 
