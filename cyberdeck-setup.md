@@ -1,6 +1,6 @@
 # Cyberdeck setup guide: tmux, Ghostty and Omarchy
 
-**For:** a Claude Code agent setting up a fresh Omarchy install (target: Lenovo ThinkPad T14s) to match the source machine, a desktop mini PC with Omarchy 4.0.6, tmux 3.8, Ghostty 1.4.0, Starship 1.27.0 and Hyprland 0.56.2.
+**For:** a Claude Code agent setting up a fresh Omarchy install (target: Lenovo ThinkPad T14s Gen 3, Intel Core i5-1245U, 16 GB, 14" 1080p-class screen; section 11 has the laptop adjustments) to match the source machine, a desktop mini PC with Omarchy 4.0.6, tmux 3.8, Ghostty 1.4.0, Starship 1.27.0 and Hyprland 0.56.2.
 
 The look is a "modern hacker but professional" cyberdeck style:
 - **Colours:** taken from the main wallpaper: copper, teal, golden olive and moss on a night-indigo, near-black background.
@@ -23,12 +23,14 @@ Every file below is the exact content from the source machine.
 - **Never run `starship config`:** with no arguments it opens an editor and hangs the shell. Use `starship print-config` or `starship prompt` to test.
 - **Commands needing `sudo`:** they can't prompt for a password from Claude Code's `!` shell. Ask the user to run them in a real terminal, or use the polkit route (for example `hostnamectl` without `sudo`).
 - **Check each step** with the commands given before moving on, and tell the user what changed.
+- **Laptop:** do the hardware check in section 11a before starting, and apply the rest of section 11 after section 10.
 
 ## 1. Questions to ask the user first
 
 1. **Hostname:** what should the machine be called? The source machine is `mini-beast`. The name shows in the tmux status row and the prompt. Have the user run `hostnamectl set-hostname <name>` in their terminal; it goes through polkit.
 2. **Rotating border:** on a laptop this redraws continuously and costs a little battery. Ask whether to keep it (section 6).
-3. **Wallpaper repo URL:** section 5c downloads the main wallpaper (`dr-hero-bg.webp`) from the user's GitHub repo. If `<REPO-RAW-URL>` in section 5c is still a placeholder, ask the user for the link to the image in their repo. If the repo is private, ask them to run `gh auth login` first (section 5c explains how to download it).
+3. **Lock screen on battery:** section 5h keeps the screen on while locked when plugged in, and lets it turn off after 5 seconds on battery. Ask whether they want that, or the screen on even on battery.
+4. **Wallpaper repo URL:** section 5c downloads the main wallpaper (`dr-hero-bg.webp`) from the user's GitHub repo. If `<REPO-RAW-URL>` in section 5c is still a placeholder, ask the user for the link to the image in their repo. If the repo is private, ask them to run `gh auth login` first (section 5c explains how to download it).
 
 ## 2. Packages and fonts
 
@@ -828,11 +830,14 @@ Make three edits to `~/.config/omarchy/plugins/<username>.lock/LockView.qml`:
 
 **Hot reload doesn't pick these up:** the shell's hot reload keeps a cached copy of `LockView.qml`, so run `omarchy restart shell` after editing. Check with `omarchy-shell lock preview`, then `omarchy-shell lock hidePreview`, and look for errors with `qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i lockview`. The preview disables input, so only the idle state shows there.
 
-### 5h. Lock screen keeps the display on
+### 5h. Lock screen keeps the display on (when plugged in)
 
-The built-in lock screen turns the display and keyboard backlight off after 5 seconds without input (`idleBlankTimer` in the lock's `Service.qml` runs `omarchy-brightness-keyboard off; omarchy-brightness-display off`). The user wants the screen to stay on the whole time it's locked. Nothing else turns the display off: the idle settings in `shell.json` (screensaver at 150 s, lock at 300 s) and the Hyprland config have no screen-off timer.
+The built-in lock screen turns the display and keyboard backlight off after 5 seconds without input (`idleBlankTimer` in the lock's `Service.qml` runs `omarchy-brightness-keyboard off; omarchy-brightness-display off`). The user wants the screen to stay on the whole time it's locked while plugged in; on battery it still turns off after 5 seconds, to save power. Nothing else turns the display off: the idle settings in `shell.json` (screensaver at 150 s, lock at 300 s) and the Hyprland config have no screen-off timer.
 
-This edits the cloned lock from 5f. In `~/.config/omarchy/plugins/<username>.lock/Service.qml`, back the file up, then replace
+This edits the cloned lock from 5f. Back up `~/.config/omarchy/plugins/<username>.lock/Service.qml`, then:
+
+1. Add `import Quickshell.Services.UPower` after `import Quickshell.Services.Pam`.
+2. Replace
 
 ```qml
   function armBlankTimer() {
@@ -844,10 +849,15 @@ This edits the cloned lock from 5f. In `~/.config/omarchy/plugins/<username>.loc
 with:
 
 ```qml
-  // Cyberdeck: keep the display on while locked. The built-in lock turns the
-  // display (and keyboard backlight) off after 5 s without input; set this to
-  // true to bring that back.
-  readonly property bool blankDisplayWhenLocked: false
+  // Cyberdeck: keep the display on while locked, unless running on battery.
+  // The built-in lock turns the display (and keyboard backlight) off after 5 s
+  // without input; that now only happens on battery. Machines without a
+  // battery (the mini PC) always count as on AC, so the display stays on.
+  // Set this to false to keep it on even on battery, or true to always blank.
+  readonly property bool blankDisplayWhenLocked: UPower.onBattery
+
+  // Plugging in or unplugging while locked takes effect straight away.
+  onBlankDisplayWhenLockedChanged: if (lockRequested) armBlankTimer()
 
   function armBlankTimer() {
     if (!blankDisplayWhenLocked) {
@@ -859,22 +869,21 @@ with:
   }
 ```
 
-Every path that would blank the display goes through `armBlankTimer()` (locking, waking, finishing a password check), so this one change covers them all; unlocking still runs `omarchy-system-wake` as before.
+Every path that would blank the display goes through `armBlankTimer()` (locking, waking, finishing a password check), so this covers them all; unlocking still runs `omarchy-system-wake` as before. `UPower.onBattery` is UPower's `OnBattery` property (`busctl get-property org.freedesktop.UPower /org/freedesktop/UPower org.freedesktop.UPower OnBattery`), which is `false` on machines without a battery.
 
 Then run `omarchy restart shell` (hot reload doesn't pick up edits to the cloned lock). Check:
 
 ```bash
 omarchy plugin list | grep -i lock     # <username>.lock enabled
-qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -i 'lock.*Service.qml'   # no errors
+omarchy-shell lock isLocked            # false (the lock service answers)
+qs log --pid $(pgrep -f 'quickshell -n -p /usr/share/omarchy/shell' | head -1) | grep -iE 'lock.*Service.qml|UPower'   # no errors
 ```
 
-`omarchy-shell lock preview` doesn't run the blank timer, so ask the user to lock for real (`omarchy system lock` or Super + Ctrl + L), leave it alone for more than 5 seconds, and confirm the screen stays on.
+`omarchy-shell lock preview` doesn't run the blank timer, so ask the user to lock for real (`omarchy system lock` or Super + Ctrl + L) and leave it alone for more than 5 seconds: the screen should stay on when plugged in and turn off on battery.
 
-**Tell the user:**
-- **Laptop battery:** on the ThinkPad this keeps the panel lit for as long as it's locked, which costs battery. Ask whether they want it on the laptop, or only when plugged in (that would need an extra check on AC power in `armBlankTimer()`).
-- **OLED burn-in:** if the display is OLED, a lock screen left on for hours can burn in, because the clock and status line don't move.
+**OLED burn-in:** if the display is OLED, tell the user a lock screen left on for hours can burn in, because the clock and status line don't move.
 
-To undo: set `blankDisplayWhenLocked` to `true` and run `omarchy restart shell`.
+To change it: set `blankDisplayWhenLocked` to `false` (always on) or `true` (always off after 5 s, the Omarchy default), then `omarchy restart shell`.
 
 ### 5i. Top bar: cyberdeck HUD frame, workspace pills and beaker button
 
@@ -1302,7 +1311,7 @@ The colours come from the main wallpaper: night indigo and warm near-black for t
   - a slowly rotating copper-to-teal border and a barely visible copper glow on the focused window
   - the Perplexity night-hillside photo as the wallpaper (`omarchy theme bg next` cycles to Nightfield and Grid)
   - a top bar floating as a HUD frame with an even copper outline and square corners, a science-beaker menu button at the top left, workspaces as numbered pills (the active one filled copper, the others hollow) and larger icons
-  - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it; the screen stays on the whole time it is locked
+  - a lock screen with the sharp, unblurred wallpaper behind the password box, a large HUD clock with date and week above it, and a `SYSTEM LOCKED // HOST ▮` status line below it; while plugged in, the screen stays on the whole time it is locked
 
 ## 10. Final check: Nerd Font glyphs survived
 
@@ -1331,3 +1340,82 @@ Where each glyph goes, if any are missing:
   - `[directory] format`: E0B7 … E0B5
   - `read_only`: F033E
   - `[git_branch] format`: E0B6 … E0B4
+
+## 11. Laptop: ThinkPad T14s Gen 3 adjustments
+
+The source mini PC has an AMD Ryzen 7 PRO 5850U (8 cores, 16 threads), Radeon Vega 8 graphics, 32 GB RAM, a 1 TB NVMe and a 3840×2160 monitor at 1.5× scale. The setup uses about 5.5 GB of RAM and 43 GB of disk there, with a load average around 1.3.
+
+| | Mini PC | T14s Gen 3 | Effect |
+|---|---|---|---|
+| CPU | Ryzen 7 PRO 5850U, 8C/16T | Core i5-1245U, 2 performance + 8 efficiency cores, 12T | About even: faster single-thread (apps, shell), slower sustained all-core work; runs warm and throttles under long loads |
+| Graphics | Radeon Vega 8 | Intel Iris Xe (80 EU) | Slightly faster; well supported by Hyprland |
+| Screen | 3840×2160 @ 1.5× | 14" 1920×1080 or 1920×1200 | About a quarter of the pixels, so blur, transparency and animations cost far less |
+| RAM | 32 GB | 16 GB, soldered | Enough for this setup; tight only with VMs, Docker or very many browser tabs |
+| Storage | 1 TB | 512 GB | Plenty |
+
+Everything in this guide runs well on it. The adjustments below are about screen size and battery.
+
+### 11a. Check the hardware first
+
+The laptop was bought refurbished from a listing with copy-paste errors (it called it an "Elitebook" and said 1080p), so confirm what it is before tuning anything:
+
+```bash
+cat /sys/class/dmi/id/product_version     # ThinkPad T14s Gen 3
+lscpu | grep 'Model name'                 # 12th Gen Intel(R) Core(TM) i5-1245U
+free -h | head -2                         # ~15 GiB total
+hyprctl monitors -j | jq -r '.[] | "\(.name) \(.width)x\(.height)@\(.refreshRate) scale \(.scale)"'   # eDP-1, resolution, scale
+lspci | grep -i -E 'ipu|imaging'          # any output: the webcam is a MIPI camera (see below)
+ls /dev/video* 2>/dev/null; command -v fprintd-list && lsusb | grep -i -E 'synaptics|fingerprint'
+```
+
+Tell the user the results, especially:
+- **Screen:** resolution, refresh rate and the scale Hyprland picked (`~/.config/hypr/monitors.lua` uses `scale = "auto"`). Section 11b depends on these.
+- **Webcam:** some Intel ThinkPads of this generation use an Intel IPU6 MIPI camera, which has limited Linux support. If `lspci` shows an IPU/imaging device, warn the user the camera may not work in video calls without extra drivers; a USB-style camera shows up as `/dev/video*` and just works.
+- **Fingerprint reader:** if present, offer 11e.
+
+### 11b. Top bar and icon size
+
+Section 5e's sizes were tuned on the mini PC's 4K monitor at 1.5×. Everything in the shell is in logical pixels, so on the laptop the same numbers take a bigger share of the screen width (it's 1920 or 1536 logical pixels wide instead of 2560), while their physical size depends on the scale Hyprland picked. Apply 5e as written first, take a screenshot (`grim -g "0,0 600x50" /tmp/bar.png`) and ask the user whether the icons and text look right.
+
+To change only the **icon size**, change `base-size` to `N` and `[spacing] scale` to `14 / N` (keeps menus and panels at the same size). The pinned text tokens stay as they are. For example `N = 16` with `scale = 0.875`, or `N = 14` with `scale = 1.0` (icons back to about 15 px). The bar height follows automatically (`size-horizontal 24 × N / 12`).
+
+To change the **text size** to `T` px instead of 14, re-pin every token to `round(T × multiplier)` and set `scale` to `T / N`:
+
+| Token | Multiplier | At T = 14 | At T = 13 | At T = 15 |
+|---|---|---|---|---|
+| `caption` | 0.833 | 12 | 11 | 12 |
+| `body-small` | 0.917 | 13 | 12 | 14 |
+| `body` | 1.0 | 14 | 13 | 15 |
+| `subtitle` | 1.083 | 15 | 14 | 16 |
+| `title` | 1.167 | 16 | 15 | 18 |
+| `heading` | 1.333 | 19 | 17 | 20 |
+| `display` | 2.0 | 28 | 26 | 30 |
+| `display-large` | 2.333 | 33 | 30 | 35 |
+| `icon-large` | 1.5 | 21 | 20 | 23 |
+
+The bar reloads `shell.toml` by itself. The top-bar frame (5i) follows Hyprland's `gaps_out`, so it lines up with the windows on any screen.
+
+### 11c. Rotating border
+
+The `borderangle` loop from section 6 redraws the focused window border all the time, which stops the graphics chip from idling and is the biggest battery cost in the setup. Recommend the user removes that line on the laptop (the copper→teal gradient stays, it just doesn't rotate). Omarchy has no hook that runs on plugging in or unplugging, so switching it automatically by power state isn't covered here.
+
+### 11d. Lock screen and battery
+
+Nothing to change: the 5h edit already keeps the screen on while locked only on AC, and lets it turn off after 5 seconds on battery. Test both: lock while plugged in (stays on), then unplug while locked (turns off after 5 seconds).
+
+### 11e. Fingerprint unlock
+
+If the laptop has a fingerprint reader, offer `omarchy setup security fingerprint` (sudo, polkit and the lock screen). The cloned lock from 5f keeps the built-in fingerprint support, so it works on the HUD lock screen too. It changes PAM configuration and needs sudo, so the user runs it in their own terminal.
+
+### 11f. Power profiles and other battery savers
+
+- **Power profiles:** `omarchy powerprofiles list` shows what's available; `omarchy powerprofiles set battery power-saver` and `omarchy powerprofiles set ac balanced` make it switch automatically. Ask the user before changing these.
+- **tmux:** `status-interval 1` re-runs the CPU and memory scripts every second (needed for the seconds in the clock). Its battery cost is small; if the user wants to trim it, `status-interval 5` with `%H:%M` in `status-right` is the trade-off.
+- **Ghostty blur:** `background-blur` is cheap on a 1080p-class screen; leave it.
+
+### 11g. What the user should notice
+
+- Apps, tmux, Ghostty and the shell feel the same or slightly snappier than on the mini PC.
+- Long builds or other sustained heavy work are a bit slower, and the fan spins up.
+- With the rotating border off and the lock screen blanking on battery, idle battery drain is close to stock Omarchy.
+
